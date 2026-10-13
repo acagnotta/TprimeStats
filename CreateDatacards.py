@@ -1,11 +1,3 @@
-# COSA MANCA:
-# - aggiungere la parte di creazione degli istogrammi dei dati, se blind si filla con la somma dei background
-# - aggiungere la parte di creazione dei datacards singole per ogni bin(categoria)
-# - aggiungere la parte di systematics
-# Obiettivo: 
-# - Creare un file di configurazione in formato JSON che contenga le informazioni necessarie per la creazione dei datacards
-# - Sistemare questa amcro in modo tale che sia runnabile modificando solo settings.json
-
 import CombineHarvester.CombineTools.ch as ch
 import optparse
 import json, os
@@ -20,27 +12,24 @@ parser.add_option('-u', '--unblind',            dest='unblind',         action='
 # parser.add_option('-s', '--singledatacards',    dest='singledatacards', action='store_true',    default=False,              help='Write single datacards per each bin')
 parser.add_option('--addSyst',                  dest='addSyst',         action='store_true',    default=False,              help='add Systematics in the datacards')
 parser.add_option('--addMCStat',                dest='addMCStat',       action='store_true',    default=False,              help='add auto MC Stat in the datacards')
-# parser.add_option('-l', '--lumi', dest='lumi', type=str, default="1", help='luminosity, default 1')
+parser.add_option('--suffix',                   dest='suffix',          type=str,               default=None,               help='suffix to add to histo.root file name (e.g. histo2022_<suffix>.root)')
+
 (opt, args)     = parser.parse_args()
 # Open JSON file
 with open(opt.jsonInput) as file:
     print("Opening JSON file {}".format(opt.jsonInput))
     jsoninput   = json.load(file)
-lumi_dict                           = jsoninput["lumi_dict"]
-lumi_dict["2022+2023"]              = lumi_dict["2022"] + lumi_dict["2023"]
-lumi_dict["2022+2023+2024"]         = lumi_dict["2022"] + lumi_dict["2023"] + lumi_dict["2024"]
 
 
 era             = opt.era
-# lumi            = lumi_dict[era]
 unblind         = opt.unblind
-# inputEosFolder  = jsoninput["plots-folder"][era]
+suffix          = opt.suffix if opt.suffix is not None else ""
 outFolderPath   = jsoninput["dc-folder"][era]
 
 def writeSingleDatacards():
     return 0
 
-def writeTotalDatacard(jsoninput, era, unblind, sig):
+def writeTotalDatacard(jsoninput, era, unblind, sig, suffix=""):
     cb = ch.CombineHarvester()
     cb.SetVerbosity(3)
 
@@ -79,11 +68,11 @@ def writeTotalDatacard(jsoninput, era, unblind, sig):
             else:
                 cb.cp().process(processes).bin(bins).AddSyst(cb, name, type, ch.SystMap()(value))
 
-        cb.ExtractShapes(f"{outFolderPath}/histo{era}.root",
+        cb.ExtractShapes(f"{outFolderPath}/histo{era}{f'_{suffix}' if suffix else ''}.root",
                         "hist_$PROCESS_$BIN_nominal", # nominal isto saved in histo2022.root as hist_"sample"_"region"
                         "hist_$PROCESS_$BIN_$SYSTEMATIC") # syst hist_$PROCESS_$BIN_$SYSTEMATIC
     else:
-        cb.ExtractShapes(f"{outFolderPath}/histo{era}.root",
+        cb.ExtractShapes(f"{outFolderPath}/histo{era}{f'_{suffix}' if suffix else ''}.root",
                         "hist_$PROCESS_$BIN_nominal","") # nominal isto saved in histo2022.root as hist_"sample"_"region"
 
     cb.PrintAll()
