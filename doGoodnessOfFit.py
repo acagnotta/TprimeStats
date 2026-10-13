@@ -10,6 +10,8 @@ parser.add_option("-m", "--massPoint", dest="massPoint", type=int, default=700, 
 parser.add_option("-j", "--jsonInput", dest="jsonInput",           default="settings.json", help="Settings JSON file")
 parser.add_option("-t", "--toys",      dest="toys",      type=int, default=1000,            help="Number of toys")
 parser.add_option("-s", "--seed",      dest="seed",      type=int, default=123456,          help="Random seed")
+parser.add_option(      "--freezeSignalStrength",        dest="freezeSignalStrength",       action="store_true", default=False, help="Fix the signal strength r to zero")
+parser.add_option(      "--robustMinimizer",             dest="robustMinimizer",            action="store_true", default=False, help="Enable fallback minimizers to avoid false local minima")
 (opt, args) = parser.parse_args()
 
 with open(opt.jsonInput) as file:
@@ -25,10 +27,14 @@ data_output         = f"higgsCombine_gof_data_bonly.GoodnessOfFit.mH125.root"
 toys_output         = f"higgsCombine_gof_toys_bonly.GoodnessOfFit.mH125.{seed}.root"
 # data_gof_options    = "--algo saturated --setParameters r=0 --freezeParameters r"
 # mc_gof_options      = "--algo saturated --setParameters r=0 --freezeParameters r --toysFrequentist"
-data_gof_options    = "--algo saturated --toysFrequentist --bypassFrequentistFit  --rMin -250 --rMax 250"
-mc_gof_options      = "--algo saturated --toysFrequentist --bypassFrequentistFit  --rMin -250 --rMax 250"
+signal_options      = "--setParameters r=0 --freezeParameters r" if opt.freezeSignalStrength else ""
+minimizer_options   = "--cminFallbackAlgo Minuit2,Simplex,0:0.01 --cminFallbackAlgo Minuit2,Migrad,2:0.001" if opt.robustMinimizer else ""
+data_gof_options    = f"--algo saturated --toysFrequentist --bypassFrequentistFit --rMin -250 --rMax 250 {signal_options} {minimizer_options}"
+mc_gof_options      = f"--algo saturated --toysFrequentist --bypassFrequentistFit --rMin -250 --rMax 250 {signal_options} {minimizer_options}"
 
-print(f"Running background-only Goodness of Fit for era {era}, mass {mass}, toys {toys}")
+signal_status = "fixed at 0" if opt.freezeSignalStrength else "floating"
+minimizer_status = "with fallback minimizers" if opt.robustMinimizer else "with the default minimizer"
+print(f"Running Goodness of Fit for era {era}, mass {mass}, toys {toys}, signal strength r {signal_status}, {minimizer_status}")
 if not os.path.exists(gof_dir):
     os.makedirs(gof_dir)
 
