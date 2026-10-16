@@ -30,6 +30,6 @@ if not os.path.exists(impact_dir):
 
 subprocess.run(f"text2workspace.py ../TprimeToTZ_{mass}.txt -m 125 -o workspace_TprimeToTZ_{mass}.root",                     shell=True, check=True, cwd=impact_dir)
 subprocess.run(f"combineTool.py -M Impacts -d workspace_TprimeToTZ_{mass}.root -m 125 --doInitialFit {FitOption}",           shell=True, check=True, cwd=impact_dir)
-subprocess.run(f"combineTool.py -M Impacts -d workspace_TprimeToTZ_{mass}.root -m 125 --doFit {FitOption} --parallel 10",    shell=True, check=True, cwd=impact_dir)
+subprocess.run(f"combineTool.py -M Impacts -d workspace_TprimeToTZ_{mass}.root -m 125 --doFit {FitOption} --parallel 50",    shell=True, check=True, cwd=impact_dir)
 subprocess.run(f"combineTool.py -M Impacts -d workspace_TprimeToTZ_{mass}.root -m 125 -o impact.json",                       shell=True, check=True, cwd=impact_dir)
-subprocess.run(f"plotImpacts.py -i impact.json -o impacts",                                                                  shell=True, check=True, cwd=impact_dir)
+subprocess.run(f"plotImpacts.py -i impact.json -o impacts --summary",                                                        shell=True, check=True, cwd=impact_dir)
