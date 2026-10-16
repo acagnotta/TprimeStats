@@ -12,6 +12,11 @@ parser.add_argument("-u", "--unblind",          action="store_true",            
 parser.add_argument("--addSyst",                action="store_true",            help="Collect shape systematics")
 opt = parser.parse_args()
 
+def SampleFiles(sample, era):
+    from samples import sample_dict
+    d = sample_dict[f"{sample}_{era}"]
+    return [f"{c.label}.root" for c in getattr(d, "components", [d])]
+
 def CollectHistos(inputEosFolder, outFolderPath, jsonInput, era, unblind=False, addSyst=False):
     inputEosFolder  = inputEosFolder.rstrip("/")
     outFolderPath   = outFolderPath.rstrip("/")
@@ -20,9 +25,10 @@ def CollectHistos(inputEosFolder, outFolderPath, jsonInput, era, unblind=False, 
     bins            = [(name, useRealData) for name, useRealData in jsonInput["categories"]]
     backgrounds     = jsonInput["processes"]["backgrounds"]
     signals         = jsonInput["processes"]["signals"]
-    files           = [f for f in os.listdir(inputEosFolder) if f.endswith(".root")]
-    processFiles    = {p: [f for f in files if f.startswith(p)] for p in backgrounds + signals}
-    dataFiles       = [f for f in files if f.startswith("Data")]
+    processFiles    = {p: SampleFiles(jsonInput["samples"][p], era) for p in backgrounds + signals}
+    dataFiles       = SampleFiles(jsonInput["samples"]["Data"], era)
+    missingFiles    = [f for f in dataFiles + sum(processFiles.values(), []) if not os.path.exists(f"{inputEosFolder}/{f}")]
+    if missingFiles: raise RuntimeError(f"Missing input files in {inputEosFolder}: {missingFiles}")
     all_processes   = backgrounds + signals
     systs           = [("nominal", "nominal", all_processes)]
     if addSyst:

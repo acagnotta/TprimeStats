@@ -32,7 +32,19 @@
                         "backgrounds": ["TT", "TW", "ZJets", "WJets", "QCD"],
                         "signals": ["TprimeToTZ_700","TprimeToTZ_1000","TprimeToTZ_1800"]
                         },
-    
+
+    "samples"       : {
+                        "Data"              : "DataJetMET",
+                        "TT"                : "TT",
+                        "TW"                : "TW",
+                        "ZJets"             : "ZJetsToNuNu_2jets",
+                        "WJets"             : "WJets_2jets",
+                        "QCD"               : "QCD",
+                        "TprimeToTZ_700"    : "TprimeToTZ_700",
+                        "TprimeToTZ_1000"   : "TprimeToTZ_1000",
+                        "TprimeToTZ_1800"   : "TprimeToTZ_1800"
+                        },
+
     "categories"    : [
                         ["AH", 1],
                         ["SL", 1],
