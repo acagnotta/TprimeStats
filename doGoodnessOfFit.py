@@ -12,6 +12,7 @@ parser.add_option("-t", "--toys",      dest="toys",      type=int, default=1000,
 parser.add_option("-s", "--seed",      dest="seed",      type=int, default=123456,          help="Random seed")
 parser.add_option(      "--freezeSignalStrength",        dest="freezeSignalStrength",       action="store_true", default=False, help="Fix the signal strength r to zero")
 parser.add_option(      "--robustMinimizer",             dest="robustMinimizer",            action="store_true", default=False, help="Enable fallback minimizers to avoid false local minima")
+parser.add_option(      "--suffix",    dest="suffix",    type=str, default="",              help="Suffix of the datacard folder (e.g. TprimeToTZ_700_<suffix>)")
 (opt, args) = parser.parse_args()
 
 with open(opt.jsonInput) as file:
@@ -22,7 +23,8 @@ mass                = str(opt.massPoint)
 toys                = str(opt.toys)
 seed                = str(opt.seed)
 dc_folder           = jsoninput["dc-folder"][era]
-gof_dir             = f"{dc_folder}/TprimeToTZ_{mass}/gof/"
+sig_folder          = f"{dc_folder}/TprimeToTZ_{mass}{f'_{opt.suffix}' if opt.suffix else ''}"
+gof_dir             = f"{sig_folder}/gof/"
 data_output         = f"higgsCombine_gof_data_bonly.GoodnessOfFit.mH125.root"
 toys_output         = f"higgsCombine_gof_toys_bonly.GoodnessOfFit.mH125.{seed}.root"
 # data_gof_options    = "--algo saturated --setParameters r=0 --freezeParameters r"

@@ -9,6 +9,7 @@ parser.add_option('-e', '--era',        dest='era',         type=str,   default 
 parser.add_option('-m', '--massPoint',                      type=int,   default = 700,                                      help='Please enter the mass point of the datacard, if not specified the code will take the mass point 700')
 parser.add_option("-j", "--jsonInput",                                  default = "settings.json",                          help="Settings JSON file")
 parser.add_option(      '--FitOption',  dest='FitOption',   type=str,   default = "--robustFit 1 -t -1 --setParameterRanges r=-100,100",  help='Please enter the fit option, if not specified the code will take the fit option -t -1')
+parser.add_option(      '--suffix',     dest='suffix',      type=str,   default = "",                                     help='Suffix of the datacard folder (e.g. TprimeToTZ_700_<suffix>)')
 (opt, args) = parser.parse_args()
 
 with open(opt.jsonInput) as file:
@@ -18,7 +19,8 @@ era             = opt.era
 mass            = str(opt.massPoint)
 FitOption       = opt.FitOption
 dc_folder       = jsoninput["dc-folder"][era]
-impact_dir      = f"{dc_folder}/TprimeToTZ_{mass}/impacts/"
+sig_folder      = f"{dc_folder}/TprimeToTZ_{mass}{f'_{opt.suffix}' if opt.suffix else ''}"
+impact_dir      = f"{sig_folder}/impacts/"
 
 
 print("Running impacts for era: {}, mass: {}, FitOption: {}".format(era, mass, FitOption))

@@ -10,6 +10,7 @@ parser.add_argument("-e", "--era",              default="2022",                 
 parser.add_argument("-j", "--jsonInput",        default="settings.json",        help="Settings JSON file")
 parser.add_argument("-u", "--unblind",          action="store_true",            help="Use real data in every category, overriding the per-category data-source flags")
 parser.add_argument("--addSyst",                action="store_true",            help="Collect shape systematics")
+parser.add_argument("-s", "--suffix",           default="",                     help="Suffix for the output file name (e.g. histo2023_<suffix>.root)")
 opt = parser.parse_args()
 
 def SampleFiles(sample, era):
@@ -17,10 +18,11 @@ def SampleFiles(sample, era):
     d = sample_dict[f"{sample}_{era}"]
     return [f"{c.label}.root" for c in getattr(d, "components", [d])]
 
-def CollectHistos(inputEosFolder, outFolderPath, jsonInput, era, unblind=False, addSyst=False):
+def CollectHistos(inputEosFolder, outFolderPath, jsonInput, era, unblind=False, addSyst=False, suffix=""):
     inputEosFolder  = inputEosFolder.rstrip("/")
     outFolderPath   = outFolderPath.rstrip("/")
     lumi            = jsonInput["lumi_dict"][era]
+    outFilePath     = f"{outFolderPath}/histo{era}{f'_{suffix}' if suffix else ''}.root"
     var             = jsonInput["variable"]
     bins            = [(name, useRealData) for name, useRealData in jsonInput["categories"]]
     backgrounds     = jsonInput["processes"]["backgrounds"]
@@ -48,7 +50,7 @@ def CollectHistos(inputEosFolder, outFolderPath, jsonInput, era, unblind=False, 
             ]
 
     os.makedirs(outFolderPath, exist_ok=True)
-    output              = ROOT.TFile(f"{outFolderPath}/histo{era}.root", "RECREATE")
+    output              = ROOT.TFile(outFilePath, "RECREATE")
     xbins               = array("d", [500, 600, 700, 800, 1000, 1400, 2000])
     nominalHistos       = {}
     componentIntegrals  = {}
@@ -123,7 +125,7 @@ def CollectHistos(inputEosFolder, outFolderPath, jsonInput, era, unblind=False, 
         h_out.Write()
 
     output.Close()
-    output                  = ROOT.TFile.Open(f"{outFolderPath}/histo{era}.root", "READ")
+    output                  = ROOT.TFile.Open(outFilePath, "READ")
     validationErrors        = 0
     for outputName, components in componentIntegrals.items():
         histogram           = output.Get(outputName)
@@ -145,18 +147,19 @@ def CollectHistos(inputEosFolder, outFolderPath, jsonInput, era, unblind=False, 
             validationErrors += 1
     output.Close()
     if validationErrors: raise RuntimeError(f"Histogram integral validation failed for {validationErrors} histograms")
-    print(f"Created {outFolderPath}/histo{era}.root")
+    print(f"Created {outFilePath}")
 
-def HaddHistos(era, outFolderPath, jsonInput):
+def HaddHistos(era, outFolderPath, jsonInput, suffix=""):
     sub_eras        = era.split("+")
     outFolderPath   = outFolderPath.rstrip("/")
     os.makedirs(outFolderPath, exist_ok=True)
-    outFilePath     = f"{outFolderPath}/histo{era}.root"
+    histoName       = lambda e: f"histo{e}{f'_{suffix}' if suffix else ''}.root"
+    outFilePath     = f"{outFolderPath}/{histoName(era)}"
     for sub_era in sub_eras:
-        inFilePath  = f"{jsonInput['dc-folder'][sub_era]}/histo{sub_era}.root"
+        inFilePath  = f"{jsonInput['dc-folder'][sub_era]}/{histoName(sub_era)}"
         if not os.path.exists(inFilePath):
-            raise RuntimeError(f"Missing histo{sub_era}.root file for era {sub_era} in folder {jsonInput['dc-folder'][sub_era]}. Please run CollectHistos.py for era {sub_era} first.")
-    haddCommand = f"hadd -f {outFilePath} " + " ".join([f"{jsonInput['dc-folder'][sub_era]}/histo{sub_era}.root" for sub_era in sub_eras])
+            raise RuntimeError(f"Missing {histoName(sub_era)} file for era {sub_era} in folder {jsonInput['dc-folder'][sub_era]}. Please run CollectHistos.py for era {sub_era} first.")
+    haddCommand = f"hadd -f {outFilePath} " + " ".join([f"{jsonInput['dc-folder'][sub_era]}/{histoName(sub_era)}" for sub_era in sub_eras])
     print(f"Running command: {haddCommand}")
     result = subprocess.run(haddCommand, shell=True)
 
@@ -168,6 +171,6 @@ if __name__ == "__main__":
         jsonInput = json.load(file)
 
     if "+" in opt.era:
-        HaddHistos(opt.era, jsonInput["dc-folder"][opt.era], jsonInput)
+        HaddHistos(opt.era, jsonInput["dc-folder"][opt.era], jsonInput, opt.suffix)
     else:    
-        CollectHistos(jsonInput["plots-folder"][opt.era], jsonInput["dc-folder"][opt.era], jsonInput, opt.era, opt.unblind, opt.addSyst)
+        CollectHistos(jsonInput["plots-folder"][opt.era], jsonInput["dc-folder"][opt.era], jsonInput, opt.era, opt.unblind, opt.addSyst, opt.suffix)

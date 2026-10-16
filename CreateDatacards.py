@@ -45,6 +45,9 @@ def writeTotalDatacard(jsoninput, era, unblind, sig, suffix=""):
     cb.AddProcesses( ["*"], ["TprimeToTZ"], ["13.6TeV"], ["jets+MET"], signals, cats, True)
 
 
+    inputShapePath = f"{outFolderPath}/histo{era}{f'_{suffix}' if suffix else ''}.root"
+    print(f"Using shape input file: {inputShapePath}")
+
     # Add systematics
     if opt.addSyst:
         print("Systematics to be added: ", jsoninput["systematics"].keys())
@@ -68,19 +71,33 @@ def writeTotalDatacard(jsoninput, era, unblind, sig, suffix=""):
             else:
                 cb.cp().process(processes).bin(bins).AddSyst(cb, name, type, ch.SystMap()(value))
 
-        cb.ExtractShapes(f"{outFolderPath}/histo{era}{f'_{suffix}' if suffix else ''}.root",
+        cb.ExtractShapes(inputShapePath,
                         "hist_$PROCESS_$BIN_nominal", # nominal isto saved in histo2022.root as hist_"sample"_"region"
                         "hist_$PROCESS_$BIN_$SYSTEMATIC") # syst hist_$PROCESS_$BIN_$SYSTEMATIC
     else:
-        cb.ExtractShapes(f"{outFolderPath}/histo{era}{f'_{suffix}' if suffix else ''}.root",
+        cb.ExtractShapes(inputShapePath,
                         "hist_$PROCESS_$BIN_nominal","") # nominal isto saved in histo2022.root as hist_"sample"_"region"
 
     cb.PrintAll()
-    if not os.path.exists(f"{outFolderPath}/{sig}"):
-        os.makedirs(f"{outFolderPath}/{sig}")
-    cb.WriteDatacard(f"{outFolderPath}/{sig}/{sig}.txt", f"{outFolderPath}/{sig}/{sig}.root")
+    sigFolderPath = f"{outFolderPath}/{sig}{f'_{suffix}' if suffix else ''}"
+    if not os.path.exists(sigFolderPath):
+        os.makedirs(sigFolderPath)
+    cb.WriteDatacard(f"{sigFolderPath}/{sig}.txt", f"{sigFolderPath}/{sig}.root")
+    with open(f"{sigFolderPath}/datacard_metadata.json", "w") as metadataFile:
+        json.dump(
+            {
+                "era": era,
+                "signal": sig,
+                "categories": [cat for cat, _ in jsoninput["categories"]],
+                "shape_input": inputShapePath,
+                "suffix": suffix,
+            },
+            metadataFile,
+            indent=2,
+            sort_keys=True,
+        )
     if opt.addMCStat:
-        with open(f"{outFolderPath}/{sig}/{sig}.txt", "a") as f:
+        with open(f"{sigFolderPath}/{sig}.txt", "a") as f:
             f.write("* autoMCStats 0 0 1\n")
 
 if __name__ == "__main__":
@@ -100,4 +117,4 @@ if __name__ == "__main__":
     print(jsoninput["processes"]["signals"])
     for sig in jsoninput["processes"]["signals"]:
         print(sig)
-        writeTotalDatacard(jsoninput, era, unblind, sig)
+        writeTotalDatacard(jsoninput, era, unblind, sig, suffix)

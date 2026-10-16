@@ -16,6 +16,7 @@ parser.add_argument("-j", "--jsonInput",                dest="jsonInput",       
 parser.add_argument("-m", "--massPoint",                dest="massPoint",               type=int,           default=700,                    help="Tprime mass point")
 parser.add_argument("-t", "--toys",                     dest="toys",                    type=int,           default=1000,                   help="Number of toys")
 parser.add_argument("-s", "--seed",                     dest="seed",                    type=int,           default=123456,                 help="Random seed")
+parser.add_argument(      "--suffix",                 dest="suffix",                                      default="",                     help="Suffix of the datacard folder (e.g. TprimeToTZ_700_<suffix>)")
 args   = parser.parse_args()
 
 with open(args.jsonInput) as file:
@@ -32,7 +33,7 @@ lumi            = jsoninput["lumi_dict"][era]
 
 
 def read_combineOutput(mass=700):
-    dc_folder       = f'{jsoninput["dc-folder"][era]}/TprimeToTZ_{mass}/'
+    dc_folder       = f'{jsoninput["dc-folder"][era]}/TprimeToTZ_{mass}{f"_{args.suffix}" if args.suffix else ""}/'
     subprocess.run(f"combine -M AsymptoticLimits -d {dc_folder}/TprimeToTZ_{mass}.txt > out.log", shell=True, check=True, cwd=dc_folder)
     r_dict          = {
                         "expected_2p5":  None,
@@ -73,7 +74,7 @@ print(f"    rExpected 50%:      {r_dict['expected_50p0']}")
 print(f"    rExpected 84%:      {r_dict['expected_84p0']}")
 
 
-bias_dir = f"{jsoninput['dc-folder'][era]}/TprimeToTZ_{mass}/bias/"
+bias_dir = f"{jsoninput['dc-folder'][era]}/TprimeToTZ_{mass}{f'_{args.suffix}' if args.suffix else ''}/bias/"
 if not os.path.exists(bias_dir):
     os.makedirs(bias_dir)
 
