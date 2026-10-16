@@ -12,7 +12,7 @@
     "dc-folder"     : {
                         "2022"              : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2022/",
                         "2022EE"            : "",
-                        "2023"              : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2023/",
+                        "2023"              : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2023/AHTight_SRTopLoose_AH0lZR_AH1lWR/",
                         "2023postBPix"      : "",
                         "2024"              : "",
                         "2022+2023"         : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2022+2023/",
@@ -30,7 +30,7 @@
 
     "processes"     : { 
                         "backgrounds": ["TT", "TW", "ZJets", "WJets", "QCD"],
-                        "signals": ["TprimeToTZ_700","TprimeToTZ_1000","TprimeToTZ_1800"]
+                        "signals": ["TprimeToTZ_1000"]
                         },
 
     "samples"       : {
@@ -40,20 +40,14 @@
                         "ZJets"             : "ZJetsToNuNu_2jets",
                         "WJets"             : "WJets_2jets",
                         "QCD"               : "QCD",
-                        "TprimeToTZ_700"    : "TprimeToTZ_700",
-                        "TprimeToTZ_1000"   : "TprimeToTZ_1000",
-                        "TprimeToTZ_1800"   : "TprimeToTZ_1800"
+                        "TprimeToTZ_1000"   : "TprimeToTZ_1000"
                         },
 
     "categories"    : [
-                        ["AH", 1],
-                        ["SL", 1],
+                        ["AHTight", 1],
+                        ["SRTopLoose", 1],
                         ["AH0lZR", 1],
-                        ["AH1lWR", 1],
-                        ["SRTopMix0fjets", 0],
-                        ["SRTopMixatleast1fjets", 0],
-                        ["SRTopMer0fjets", 0],
-                        ["SRTopMeratleast1fjets", 0]
+                        ["AH1lWR", 1]
                         ],
     
     "systematics"   : {
