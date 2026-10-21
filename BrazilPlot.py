@@ -4,19 +4,39 @@ from array import array
 import numpy as np
 from samples import *
 import subprocess
+import argparse
+import json
+import sys
 ROOT.gROOT.SetBatch()
 
-era = "v1125_2223tot"#"2022_set3allCR" #"2022_set2SRTopLoose" #"2022_set1basic"
-# "2022tot"#"2022_2023tot" #"2023"#"projectionRun3"#"2022tot"#"2022"#"2022EE"#
+
+parser = argparse.ArgumentParser(description="Collect histograms for one era")
+parser.add_argument("-e", "--era",                                                        default="2022",             help="Era to process, e.g. 2022, 2022EE, 2022+2023, etc.")
+parser.add_argument('-j', '--jsonInput',          dest='jsonInput',       type=str,       default="settings.json",    help='json file containing the settings')
+opt = parser.parse_args()
+with open(opt.jsonInput) as file:
+    print("Opening JSON file {}".format(opt.jsonInput))
+    jsoninput   = json.load(file)
+lumi_dict                           = jsoninput["lumi_dict"]
+lumi_dict["2022+2023"]              = lumi_dict["2022"] + lumi_dict["2023"]
+lumi_dict["2022+2023+2024"]         = lumi_dict["2022"] + lumi_dict["2023"] + lumi_dict["2024"]
+
+
+
+era                                 = opt.era
+lumi                                = lumi_dict[era]
+outputFolderPath                    = jsoninput["dc-folder"][era]
+
 
 def read_combineOutput(mass=0.7):
     print("Reading combine output for mass", mass)
     m = str(int(mass*10**3))
-    combinecommand = "combine -M AsymptoticLimits -d TprimeToTZ_"+m+".txt > out.log"
-    subprocess.run("cd "+era+"/TprimeToTZ_"+m+" && "+combinecommand, shell=True, check=True)
+    dcFolderPath   = f'{jsoninput["dc-folder"][era]}/TprimeToTZ_{m}'
+    combinecommand = f"combine -M AsymptoticLimits -d {dcFolderPath}/TprimeToTZ_{m}.txt > {dcFolderPath}/out.log"
+    subprocess.run(f"cd {dcFolderPath} && {combinecommand}", shell=True, check=True)
     # subprocess.run("cd "+era+"/TprimeToTZ_"+m+" && "+combinecommand, shell=True, check=True)
     # os.popen("cd -")
-    with open(era+"/TprimeToTZ_"+m+"/out.log") as f:
+    with open(f"{dcFolderPath}/out.log") as f:
         lines = f.readlines()
     for line in lines:
         if "50.0%" in line:
@@ -34,7 +54,7 @@ def read_combineOutput(mass=0.7):
 masses      = [0.7, 1, 1.8]
 # masses      = [0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8]
 sigma       = [sample_dict["TprimeToTZ_"+str(int(m*10**3))+"_2022"].sigma for m in masses]
-ex          = [1 , 1, 1]
+ex          = [0, 0, 0]
 
 r           = []
 r_ey1_down  = []
@@ -82,27 +102,13 @@ exprun2                 = ROOT.TGraph(len(masses_observedFullRun2), array('d',ma
 # Styling
 # CMS.SetExtraText("Preliminary")
 CMS.SetExtraText("Work in progress")
-iPos = 0
+iPos = 11
 canv_name = 'limitplot_root'
-if era == "2022":
-    CMS.SetLumi("7.980")
-elif era == "2022EE":
-    CMS.SetLumi("26.672")
-elif era == "2022tot":
-    CMS.SetLumi("34.65")
-elif era == "2023":
-    CMS.SetLumi("18.063")
-elif era == "2023postBPix":
-    CMS.SetLumi("9.693")
-elif era == "2022_2023tot":
-    CMS.SetLumi("62.41")
-elif era == "v1125_2223tot":
-    CMS.SetLumi("62.41")
-
-CMS.SetEnergy("13.6")
+CMS.SetLumi(lumi, run="Run 3", round_lumi=3)
+CMS.SetEnergy(13.6)
 CMS.ResetAdditionalInfo()
 y_str = "#sigma(pp#rightarrowTbq) #times BR(T#rightarrowtZ) [pb]"
-canv = CMS.cmsCanvas(canv_name, min(x)-0.05,max(x)+0.05,0.0001,12,"T' mass[TeV]",y_str,square=CMS.kSquare,extraSpace=0.05,iPos=iPos)
+canv = CMS.cmsCanvas(canv_name, min(x)-0.05,max(x)+0.05,0.0001,12,"T' mass [TeV]",y_str,square=True,extraSpace=0.05,iPos=iPos)
 CMS.cmsDraw(ge2, "3L", fcolor = ROOT.TColor.GetColor("#F5BB54"))
 CMS.cmsDraw(ge, "3", fcolor = ROOT.TColor.GetColor("#607641"))
 CMS.cmsDraw(g, "L", lstyle=ROOT.kDashed)
@@ -111,18 +117,19 @@ CMS.cmsDraw(obsrun2, "L", lcolor = ROOT.TColor.GetColor("#964a8b"), lwidth=2)
 CMS.cmsDraw(exprun2, "L", lcolor = ROOT.TColor.GetColor("#964a8b"), lwidth=2, lstyle=ROOT.kDashed)
 
 canv.SetLogy()
-leg = CMS.cmsLeg(0.3, 0.90 - 0.05 * 4, 0.95, 0.90, textSize=0.04)
+leg = CMS.cmsLeg(0.50, 0.60, 0.94, 0.90, textSize=0.026)
 leg.AddEntry(g, "expected","L")
 leg.AddEntry(ge, "68% expected","F")
 leg.AddEntry(ge2, "95% expected","F")
 leg.AddEntry(th, "#sigma(NLO), Singlet T, #Gamma/m_{T}<0.01","L")
 leg.AddEntry(obsrun2, "observed Full Run 2","L")
 leg.AddEntry(exprun2, "expected Full Run 2","L")
-CMS.SaveCanvas(canv, "./"+era+"/limitPlot4SR2rateParams_"+era+".png", False)
-CMS.SaveCanvas(canv, "./"+era+"/limitPlot4SR2rateParams_"+era+".pdf")
+CMS.CMS_lumi(canv, iPos)
+CMS.SaveCanvas(canv, f"{outputFolderPath}/limitPlot4SR2rateParams_{era}.png", False)
+CMS.SaveCanvas(canv, f"{outputFolderPath}/limitPlot4SR2rateParams_{era}.pdf")
 # Save expected limits
 
-with open(era+"/expectedLimits.txt", "w") as f:
+with open(f"{outputFolderPath}/expectedLimits.txt", "w") as f:
     f.write("mass,expected,expected_16,expected_84,expected_2_5,expected_97_5\n")
     for i in range(len(masses)):
         f.write(str(masses[i])+","+str(y_central[i])+","+str(y1_down[i])+","+str(y1_up[i])+","+str(y2_down[i])+","+str(y2_up[i])+"\n")
@@ -157,38 +164,25 @@ obsrun2                 = ROOT.TGraph(len(masses_observedFullRun2), array('d',ma
 # Styling
 # CMS.SetExtraText("Preliminary")
 CMS.SetExtraText("Work in progress")
-iPos = 0
-canv_name = 'limitplot_root'
-if era == "2022":
-    CMS.SetLumi("7.980")
-elif era == "2022EE":
-    CMS.SetLumi("26.672")
-elif era == "2022tot":
-    CMS.SetLumi("34.65")
-elif era == "2023":
-    CMS.SetLumi("18.063")
-elif era == "2023postBPix":
-    CMS.SetLumi("9.693")
-elif era == "2022_2023tot":
-    CMS.SetLumi("62.41")
-elif era == "v1125_2223tot":
-    CMS.SetLumi("62.41")
-
-CMS.SetEnergy("13.6")
+iPos = 11
+canv_name = 'signalstrength_root'
+CMS.SetLumi(lumi, run="Run 3", round_lumi=3)
+CMS.SetEnergy(13.6)
 CMS.ResetAdditionalInfo()
 y_str = "Signal strength"
-canv = CMS.cmsCanvas(canv_name, min(x)-0.05,max(x)+0.05,min(y2_down)-0.5 ,max(y2_up)+1.5,"T' mass[TeV]",y_str,square=CMS.kSquare,extraSpace=0.05,iPos=iPos)
+signal_y_min = max(0, min(np.array(y_central) - np.array(y2_down)) * 0.9)
+signal_y_max = max(np.array(y_central) + np.array(y2_up)) * 1.1
+canv = CMS.cmsCanvas(canv_name, min(x)-0.05,max(x)+0.05,signal_y_min,signal_y_max,"T' mass [TeV]",y_str,square=True,extraSpace=0.05,iPos=iPos)
 CMS.cmsDraw(ge2, "3L", fcolor = ROOT.TColor.GetColor("#F5BB54"))
 CMS.cmsDraw(ge, "3", fcolor = ROOT.TColor.GetColor("#607641"))
 CMS.cmsDraw(g, "L", lstyle=ROOT.kDashed)
 CMS.cmsDraw(th, "L", lcolor = ROOT.TColor.GetColor("#bd1f01"), lwidth=2)
 
 # canv.SetLogy()
-leg = CMS.cmsLeg(0.3, 0.90 - 0.05 * 4, 0.95, 0.90, textSize=0.04)
+leg = CMS.cmsLeg(0.25, 0.58, 0.66, 0.77, textSize=0.032)
 leg.AddEntry(g, "expected","L")
 leg.AddEntry(ge, "68% expected","F")
 leg.AddEntry(ge2, "95% expected","F")
-CMS.SaveCanvas(canv, "./"+era+"/signalstrenght_"+era+".png", False)
-CMS.SaveCanvas(canv, "./"+era+"/signalstrenght_"+era+".pdf")
-
-
+CMS.CMS_lumi(canv, iPos)
+CMS.SaveCanvas(canv, f"{outputFolderPath}/signalstrenght_{era}.png", False)
+CMS.SaveCanvas(canv, f"{outputFolderPath}/signalstrenght_{era}.pdf")
