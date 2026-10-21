@@ -49,6 +49,7 @@ if args.positive:
 run(f"python3 CreateDatacards.py -e {era} -j {settings_file} --addSyst --addMCStat {suffix_opt} {unblind}")
 
 for mass in massPoints:
-    run(f"python3 doImpacts.py -e {era} -m {mass} -j {settings_file} {suffix_opt}")
+    impactOptions = "--robustFit 1 --cminDefaultMinimizerStrategy=1 --setParameterRanges r=-100,100" # -t -1 --autoBoundsPOIs r --autoRange 1 --cminDefaultMinimizerStrategy=1
+    run(f"python3 doImpacts.py -e {era} -m {mass} -j {settings_file} {suffix_opt} --FitOption '{impactOptions}'")
     run(f"python3 doGoodnessOfFit.py -e {era} -m {mass} -j {settings_file} -t 500 -s 123456 {suffix_opt}")
     run(f"python3 doBiasTest.py -e {era} -m {mass} -j {settings_file} -t 500 {suffix_opt}")
