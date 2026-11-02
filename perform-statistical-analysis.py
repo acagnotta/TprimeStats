@@ -15,6 +15,7 @@ parser.add_argument('-m', '--mode',       type=str,               default='csmdl
 parser.add_argument('--dryrun',       action="store_true", default=False,                 help='just get run the commands file without executing them')
 parser.add_argument('--verbose',       type=int,               default=0,                 help='Verbosity level')
 parser.add_argument('-v', '--variant',       type=str,               default='',                 help='Suffix labelling the variant at datacard level)')
+parser.add_argument('--testMasses',       type=str,               default='',                 help='Comma-separated masses in GeV for impacts/gof/bias (e.g. 1000), default all')
 args = parser.parse_args()
 
 
@@ -85,6 +86,7 @@ if ("p" in args.mode):
 #unpackLabel(signal,verbose)[0] for signal in jsoninput["processes"]["signals"]]
 for signal in jsoninput["processes"]["signals"]:
     mass=str(int(1000*unpackLabel(signal,verbose)[0]))
+    if args.testMasses and mass not in args.testMasses.split(","): continue
     signalpath=output_dir+"/"+signal+"_"+suffix_dc+"/"
     impactOptions = "--robustFit 1 --cminDefaultMinimizerStrategy=1 --setParameterRanges r=-100,100" # -t -1 --autoBoundsPOIs r --autoRange 1 --cminDefaultMinimizerStrategy=1
     if("i" in args.mode):
