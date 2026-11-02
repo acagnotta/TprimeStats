@@ -14,11 +14,11 @@
     "dc-folder"     : {
                         "2022"              : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2022/",
                         "2022EE"            : "",
-                        "2023"              : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2023/",
+                        "2023"              : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2023/test_sig2024/",
                         "2023postBPix"      : "",
-                        "2024"              : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2024/",
+                        "2024"              : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2024/test_sig2024/",
                         "2022+2023"         : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2022+2023/",
-                        "2023+2024"         : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2023+2024/",
+                        "2023+2024"         : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2023+2024/test_sig2024/",
                         "2022+2023+2024"    : ""
                         },
     
