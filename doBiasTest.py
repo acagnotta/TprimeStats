@@ -5,6 +5,7 @@ import os, sys
 import ROOT
 import cmsstyle as CMS
 import subprocess
+from utils import getLumi
 
 ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetOptStat(0)
@@ -30,7 +31,7 @@ mass            = args.massPoint
 toys            = args.toys
 seed            = args.seed
 extraFitOptions = ""
-lumi            = jsoninput["lumi_dict"][era]
+lumi            = getLumi(jsoninput["lumi_dict"], era)
 signal          = f"TprimeToTZ_{mass}" if args.signal =='' else args.signal  
 dc_folder       = jsoninput["dc-folder"][era]
 sig_folder      = f"{dc_folder}/{signal}{f'_{opt.suffix}' if opt.suffix else ''}" if args.sigpath=='' else args.sigpath 

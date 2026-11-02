@@ -7,6 +7,7 @@ from pathlib import Path
 import os, sys
 import ROOT
 import cmsstyle as CMS
+from utils import getLumi
 
 ROOT.gROOT.SetBatch(True)
 
@@ -28,7 +29,7 @@ with open(args.jsonInput) as file:
 outputFolder    = Path(args.input).parent
 era             = args.era
 mass            = args.massPoint
-lumi            = jsonInput["lumi_dict"][era]
+lumi            = getLumi(jsonInput["lumi_dict"], era)
 toys            = result["toy"]
 observed        = result["obs"][0]
 if not toys:

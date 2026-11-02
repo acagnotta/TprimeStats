@@ -7,6 +7,7 @@ import subprocess
 import argparse
 import json
 import sys
+from utils import getLumi
 ROOT.gROOT.SetBatch()
 
 
@@ -22,13 +23,11 @@ with open(opt.jsonInput) as file:
     print("Opening JSON file {}".format(opt.jsonInput))
     jsoninput   = json.load(file)
 lumi_dict                           = jsoninput["lumi_dict"]
-lumi_dict["2022+2023"]              = lumi_dict["2022"] + lumi_dict["2023"]
-lumi_dict["2022+2023+2024"]         = lumi_dict["2022"] + lumi_dict["2023"] + lumi_dict["2024"]
 
 
 
 era                                 = opt.era
-lumi                                = lumi_dict[era]
+lumi                                = getLumi(lumi_dict, era)
 outputFolderPath                    = jsoninput["dc-folder"][era]
 signals                             = jsoninput["processes"]["signals"]
 

@@ -10,3 +10,6 @@ def unpackLabel(l,verbose=0):#function to extract the model from the label
         model=("TprimeToTZNW")
     if(verbose>0):print(f"label: {l}, mass: {mass}, model: {model}" )    
     return mass,model
+
+def getLumi(lumi_dict, era):#total luminosity of an era, also for combined eras like 2023+2024
+    return sum(lumi_dict[e] for e in era.split("+"))
