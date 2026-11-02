@@ -61,14 +61,17 @@ def write_run(cmd, doRun=True):
         subprocess.run(cmd, shell=True, check=True)
 
 fitoptions=""#we should give as arguments to the limit functions some options - there might be the need
-if ("c" in args.mode):
-    write_run(f"python3 CollectHistos.py -e {era} -j {settings_file} --addSyst {f'--suffix {histo_suffix}' if histo_suffix else ''} {unblind}",doRun=False)
+# histogram steps are done era by era: for combined eras (e.g. 2023+2024) they are repeated for each era, so that the commands file of the combination contains everything
+for sub_era in era.split("+"):
+    sub_era_dir = jsoninput["dc-folder"][sub_era].rstrip("/")
+    if ("c" in args.mode):
+        write_run(f"python3 CollectHistos.py -e {sub_era} -j {settings_file} --addSyst {f'--suffix {histo_suffix}' if histo_suffix else ''} {unblind}",doRun=False)
 
-if ("s" in args.mode):
-    write_run(f"python3 symmetrizeHistos.py -i {output_dir}/histo{era}{f'_{histo_suffix}' if histo_suffix else ''}.root -s jesTotal,jer",doRun=False)
+    if ("s" in args.mode):
+        write_run(f"python3 symmetrizeHistos.py -i {sub_era_dir}/histo{sub_era}{f'_{histo_suffix}' if histo_suffix else ''}.root -s jesTotal,jer",doRun=False)
 
-if ("m" in args.mode):
-    write_run(f"python3 makePositiveHistos.py -i {output_dir}/histo{era}{f'_{sym_suffix}' if sym_suffix else ''}.root",doRun=False)
+    if ("m" in args.mode):
+        write_run(f"python3 makePositiveHistos.py -i {sub_era_dir}/histo{sub_era}{f'_{sym_suffix}' if sym_suffix else ''}.root",doRun=False)
 
 if ("d" in args.mode):
     write_run(f"python3 CreateDatacards.py -e {era} -j {settings_file} --addSyst --addMCStat {suffix_opt} {variant_opt} {unblind}",doRun=False)
