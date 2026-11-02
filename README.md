@@ -51,17 +51,33 @@ Use `source`, not `bash` or `./`: otherwise the `cmsenv` environment is lost whe
 
 Everything is driven by `settings.json`: input plots folder and output datacard folder per era (`plots-folder`, `dc-folder`), `processes` (backgrounds and signals), `samples`, `categories` and `systematics`.
 
+Luminosity:
+- integrated luminosity per era (`lumi_dict`): [PdmVRun3Analysis](https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVRun3Analysis)
+- luminosity uncertainty (`systematics.lumi`, `lumi-combinations`): [LumiRecommendationsRun3](https://twiki.cern.ch/twiki/bin/view/CMS/LumiRecommendationsRun3)
+
 ## Full analysis
 
 ```bash
-python3 perform-statistical-analysis.py -e 2023 -p
+python3 perform-statistical-analysis.py -e 2023 -m csmdlp
 ```
 
-- `-p`: fix zero-content bins in the histograms
+- `-m <letters>`: steps to run (c=collect, s=symmetrize JES/JER, m=fix zero-content bins, d=datacards, l=limits, p=Brazil plot, i=impacts, g=GoF, b=bias). `s` and `m` add `symmetrized`/`zerosFixed` to the suffix, so keep them also when rerunning without collecting (e.g. `-m smdlp`)
 - `-s <suffix>`: label the whole run (e.g. `histo2023_<suffix>.root`, `TprimeToTZ_<mass>_<suffix>/`)
 - `-u`: unblind (use data instead of the background sum)
 
 A copy of the settings and the list of executed commands (`settings_<suffix>.json`, `commands_<suffix>.sh`) is saved in the `dc-folder`, together with the limits (`Limits_<era>_<suffix>.json`).
+
+## Combining eras
+
+```bash
+python3 perform-statistical-analysis.py -e 2023+2024 -s <suffix> -m csmdlp
+```
+
+- The histogram steps (c, s, m) are run for each era, in that era's `dc-folder`.
+- One datacard per era is written in `<dc-folder of 2023+2024>/TprimeToTZ_<mass>_<suffix>/<era>/`, and the two are merged with `combineCards.py` into `TprimeToTZ_<mass>.txt` (bins prefixed `y<era>_`).
+- Systematics with `"correlated": false` in the settings (JES, JER) get one nuisance per era (`jesTotal_2023`, `jesTotal_2024`, ...); all the others stay correlated.
+- The luminosity uncertainty follows the correlation scheme of LumiRecommendationsRun3 for the combined years (`lumi-combinations` in the settings): 2022EE counts as 2022 and 2023postBPix as 2023.
+- `commands_<suffix>.sh` in the combination `dc-folder` contains all the steps of all eras, to reproduce the result from scratch.
 
 ## Single steps
 
