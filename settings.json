@@ -107,8 +107,9 @@
                             "name": "WJets_norm", 
                             "processes": ["WJets"], 
                             "bin": ["AH1lWR"] , 
-                            "type": "rateParam", 
-                            "value": 1.0
+                            "type": "rateParam",
+                            "value": 1.0,
+                            "correlated": false
                         },
                         "pileup" : {
                             "name": "pu", 
@@ -116,7 +117,8 @@
                             "bin": ""  , 
                             "type": "shape", 
                             "value": 1.0,
-                            "branchRootFile": "pu"
+                            "branchRootFile": "pu",
+                            "correlated": true
                         },
                         "jet_energy_scale" : {
                             "name": "jesTotal" ,
@@ -142,7 +144,8 @@
                             "bin": "",
                             "type": "shape",
                             "value": 1.0,
-                            "branchRootFile": "pdf_total"
+                            "branchRootFile": "pdf_total",
+                            "correlated": true
                         },
                         "QCDScale_TT": {
                             "name": "QCDScale_TT",
@@ -150,7 +153,8 @@
                             "bin": "",
                             "type": "shape",
                             "value": 1.0,
-                            "branchRootFile": "QCDScale"
+                            "branchRootFile": "QCDScale",
+                            "correlated": true
                         },
                         "QCDScale_TW": {
                             "name": "QCDScale_TW",
@@ -158,7 +162,8 @@
                             "bin": "",
                             "type": "shape",
                             "value": 1.0,
-                            "branchRootFile": "QCDScale"
+                            "branchRootFile": "QCDScale",
+                            "correlated": true
                         },
                         "QCDScale_QCD": {
                             "name": "QCDScale_QCD",
@@ -166,7 +171,8 @@
                             "bin": "",
                             "type": "shape",
                             "value": 1.0,
-                            "branchRootFile": "QCDScale"
+                            "branchRootFile": "QCDScale",
+                            "correlated": true
                         },
                         "QCDScale_WJets": {
                             "name": "QCDScale_WJets",
@@ -174,7 +180,8 @@
                             "bin": "",
                             "type": "shape",
                             "value": 1.0,
-                            "branchRootFile": "QCDScale"
+                            "branchRootFile": "QCDScale",
+                            "correlated": true
                         },
                         "QCDScale_ZJets": {
                             "name": "QCDScale_ZJets",
@@ -182,7 +189,8 @@
                             "bin": "",
                             "type": "shape",
                             "value": 1.0,
-                            "branchRootFile": "QCDScale"
+                            "branchRootFile": "QCDScale",
+                            "correlated": true
                         },
                         "ISR": {
                             "name": "ISR",
@@ -190,7 +198,8 @@
                             "bin": "",
                             "type": "shape",
                             "value": 1.0,
-                            "branchRootFile": "ISR"
+                            "branchRootFile": "ISR",
+                            "correlated": true
                         },
                         "FSR": {
                             "name": "FSR",
@@ -198,7 +207,8 @@
                             "bin": "",
                             "type": "shape",
                             "value": 1.0,
-                            "branchRootFile": "FSR"
+                            "branchRootFile": "FSR",
+                            "correlated": true
                         }
                     }
 }
