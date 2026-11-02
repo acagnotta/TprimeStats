@@ -109,7 +109,7 @@
                             "bin": ["AH1lWR"] , 
                             "type": "rateParam",
                             "value": 1.0,
-                            "correlated": false
+                            "correlated": true
                         },
                         "pileup" : {
                             "name": "pu", 
