@@ -34,7 +34,7 @@ extraFitOptions = ""
 lumi            = getLumi(jsoninput["lumi_dict"], era)
 signal          = f"TprimeToTZ_{mass}" if args.signal =='' else args.signal  
 dc_folder       = jsoninput["dc-folder"][era]
-sig_folder      = f"{dc_folder}/{signal}{f'_{opt.suffix}' if opt.suffix else ''}" if args.sigpath=='' else args.sigpath 
+sig_folder      = f"{dc_folder}/{signal}{f'_{args.suffix}' if args.suffix else ''}" if args.sigpath=='' else args.sigpath 
 
 
 
