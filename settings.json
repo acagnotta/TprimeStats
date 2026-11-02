@@ -1,11 +1,12 @@
 {
+    "notes"         : "2023 test: no TprimeToTZ_*_2023 signal yet, the plots-folder of 2023 has symlinks to the 2024 signal files (see NOTE.txt there)",
     "variable"      : "MT_T",
     "rebinning"     :  [500, 600, 700, 800, 1000, 1200, 1400, 1600, 1800, 2000],
     
     "plots-folder"  : {
                         "2022"          : "",
                         "2022EE"        : "",
-                        "2023"          : "/eos/user/l/lfavilla/RDF_DManalysis/results_wTrotaScaleFactor_newWPs_TopPtReweightingTheory/run2023_July2026_AllProcesses_OnlyPass_OnlySelectedTop/plots/",
+                        "2023"          : "/eos/user/l/lfavilla/RDF_DManalysis/results/2023/run2023_wTopSFs_OnlySelectedTop_JMAR_Review1_sig2024/plots/",
                         "2023postBPix"  : "",
                         "2024"          : "/eos/user/l/lfavilla/RDF_DManalysis/results/2024/run2024_wSFbtag_NoTrotaSF/plots/"
                         },
@@ -13,11 +14,11 @@
     "dc-folder"     : {
                         "2022"              : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2022/",
                         "2022EE"            : "",
-                        "2023"              : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2023/AHTight_SRTopLoose_AH0lZR_AH1lWR/",
+                        "2023"              : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2023/",
                         "2023postBPix"      : "",
                         "2024"              : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2024/",
-                        "2022+2023"      : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2022+2023/",
-                        "2023+2024"         : "",
+                        "2022+2023"         : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2022+2023/",
+                        "2023+2024"         : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2023+2024/",
                         "2022+2023+2024"    : ""
                         },
     
@@ -71,7 +72,23 @@
                         ["SRTopMixatleast1fjets", 0],
                         ["SRTopMeratleast1fjets", 0]
                         ],
-    
+
+    "lumi-combinations" : {
+                        "2022+2023"         : {
+                                                "lumi_13p6TeV_22_23"    : {"2022": 1.0138, "2023": 1.0017},
+                                                "lumi_13p6TeV_23"       : {"2023": 1.0127}
+                                            },
+                        "2023+2024"         : {
+                                                "lumi_13p6TeV_23"       : {"2023": 1.0115},
+                                                "lumi_13p6TeV_23_24"    : {"2023": 1.0056, "2024": 1.0161}
+                                            },
+                        "2022+2023+2024"    : {
+                                                "lumi_13p6TeV_22_23_24" : {"2022": 1.0138, "2023": 1.0017, "2024": 1.0020},
+                                                "lumi_13p6TeV_23_24"    : {"2023": 1.0127, "2024": 1.0068},
+                                                "lumi_13p6TeV_24"       : {"2024": 1.0144}
+                                            }
+                        },
+
     "systematics"   : {
                         "lumi": {
                             "name": "lumi",
@@ -83,10 +100,7 @@
                                         "2022EE":           1.013,
                                         "2023":             1.013,
                                         "2023postBPix":     1.013,
-                                        "2024":             1.016,
-                                        "2022+2023":        1.0101,
-                                        "2023+2024":        1.0141,
-                                        "2022+2023+2024":   1.0120
+                                        "2024":             1.016
                                     }
                         },
                         "WJets_norm" : {
@@ -105,12 +119,13 @@
                             "branchRootFile": "pu"
                         },
                         "jet_energy_scale" : {
-                            "name": "jesTotal" , 
-                            "processes": "", 
-                            "bin": ""  , 
-                            "type": "shape", 
+                            "name": "jesTotal" ,
+                            "processes": "",
+                            "bin": ""  ,
+                            "type": "shape",
                             "value": 1.0,
-                            "branchRootFile": "jesTotal"
+                            "branchRootFile": "jesTotal",
+                            "correlated": false
                         },
                         "jet_energy_resolution" : {
                             "name": "jer" , 
@@ -118,7 +133,8 @@
                             "bin": "", 
                             "type": "shape", 
                             "value": 1.0,
-                            "branchRootFile": "jer"
+                            "branchRootFile": "jer",
+                            "correlated": false
                         },
                         "pdf_total": {
                             "name": "pdf_total",
