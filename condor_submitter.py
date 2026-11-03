@@ -9,7 +9,7 @@ import time
 
 usage = """python3 condor_submitter.py -j settingsA.json [settingsB.json ...] -e 2023+2024 2023 2024 [--dryrun] <options of perform-statistical-analysis.py>
        python3 condor_submitter.py --status   [condor/<job folder> ...]
-       python3 condor_submitter.py --resubmit [condor/<job folder> ...]"""
+       python3 condor_submitter.py --resubmit condor/<job folder> [...]"""
 # allow_abbrev=False: an option of perform-statistical-analysis.py is never taken as a short form of one of the submitter
 parser = argparse.ArgumentParser(description="Run perform-statistical-analysis.py on HTCondor: one job per settings file, the eras run in sequence inside the job", usage=usage, allow_abbrev=False)
 parser.add_argument('-j', '--jsonInput',    type=str,   nargs='+',  default=[],             help='Settings JSON file(s), one job each')
@@ -19,7 +19,7 @@ parser.add_argument('--cpus',               type=int,               default=8,  
 parser.add_argument('--cmssw',              type=str,               default=os.path.expanduser('~/CMSSW_16_0_0/src'), help='CMSSW src folder with combine')
 parser.add_argument('--dryrun',             action='store_true',                            help='Write the job files without submitting')
 parser.add_argument('--status',             type=str,   nargs='*',  default=None,           help='Print the status of these job folders (default: all in condor/)')
-parser.add_argument('--resubmit',           type=str,   nargs='*',  default=None,           help='Resubmit the failed jobs of these job folders (default: all in condor/), only the eras not DONE')
+parser.add_argument('--resubmit',           type=str,   nargs='*',  default=None,           help='Resubmit the failed jobs of these job folders (to be given explicitly), only the eras not DONE')
 # the options not known here (e.g. -m, -s, -u, --testMasses) go untouched to perform-statistical-analysis.py
 args, pas_options = parser.parse_known_args()
 
@@ -102,6 +102,8 @@ if args.status is not None:
         print(f"    done: {' '.join(done) or '-'}   failed: {' '.join(failed) or '-'}   to do: {' '.join(todo) or '-'}")
 
 elif args.resubmit is not None:
+    # no default here: an old failed job nobody cares about anymore must not be resubmitted by mistake
+    if not args.resubmit: parser.error("--resubmit needs the job folders to resubmit (e.g. condor/20261103_110318_*)")
     for job_folder in job_folders(args.resubmit):
         job             = json.load(open(f"{job_folder}/job.json"))
         state, cluster  = condor_state(job_folder, job)
