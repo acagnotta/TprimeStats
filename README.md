@@ -67,6 +67,10 @@ python3 perform-statistical-analysis.py -e 2023 -m csmdlp
 
 A copy of the settings and the list of executed commands (`settings_<suffix>.json`, `commands_<suffix>.sh`) is saved in the `dc-folder`, together with the limits (`Limits_<era>_<suffix>.json`).
 
+The impacts (`i`) are done on the Asimov dataset twice, background only and with the nominal signal (`-t -1 --expectSignal 0/1`), in `TprimeToTZ_<mass>_<suffix>/impacts_r0/` and `impacts_r1/`.
+
+If a step fails (e.g. the impacts), the next steps are still run, but the script exits with an error at the end.
+
 ## Combining eras
 
 ```bash
@@ -79,6 +83,20 @@ python3 perform-statistical-analysis.py -e 2023+2024 -s <suffix> -m csmdlp
 - The luminosity uncertainty follows the correlation scheme of LumiRecommendationsRun3 for the combined years (`lumi-combinations` in the settings): 2022EE counts as 2022 and 2023postBPix as 2023.
 - `commands_<suffix>.sh` in the combination `dc-folder` contains all the steps of all eras, to reproduce the result from scratch.
 
+## Running on HTCondor
+
+Long runs survive the logout from lxplus only on batch. One job per settings file; the eras run in sequence inside the job, each one with all its steps. The options the submitter doesn't know (`-m`, `-s`, `-u`, `--testMasses`, ...) go to `perform-statistical-analysis.py`:
+
+```bash
+python3 condor_submitter.py -j settingsA.json settingsB.json -e 2023+2024 2023 2024 -m csmdlpig --testMasses 1000
+python3 condor_submitter.py --status                 # all jobs in condor/, or give the job folders
+python3 condor_submitter.py --resubmit               # failed/removed jobs, only the eras not DONE
+```
+
+- `--flavour` (default `tomorrow` = 1 day), `--cpus` (default 8), `--cmssw` (default `~/CMSSW_16_0_0/src`), `--dryrun` (write the job files, or show what would be resubmitted, without submitting)
+- job files and logs in `condor/<launchtime>_<settings>/`, with a copy of the settings (the batch nodes don't see local `/tmp`) and `job.json` (eras and options, used by `--status` and `--resubmit`)
+- a failed era doesn't stop the next ones: each era leaves `DONE_<era>` or `FAILED_<era>` in the job folder, and the job exits with an error if any era failed
+
 ## Single steps
 
 ```bash
@@ -86,8 +104,9 @@ python3 CollectHistos.py -e 2023 --addSyst                      # collect histog
 python3 symmetrizeHistos.py -i <dc-folder>/histo2023.root -s jesTotal,jer   # symmetrize JES/JER
 python3 makePositiveHistos.py -i <dc-folder>/histo2023_symmetrized.root     # fix zero-content bins
 python3 CreateDatacards.py -e 2023 --addSyst --addMCStat        # write datacards
+python3 RunLimits.py -e 2023                                    # limits, 8 masses in parallel (--jobs) -> Limits_2023.json
 python3 BrazilPlot.py -e 2023                                   # limits (Brazil plot)
-python3 doImpacts.py -e 2023 -m 1000                            # impacts
+python3 doImpacts.py -e 2023 -m 1000 --outdir impacts_r0         # impacts (default fit option: Asimov -t -1)
 python3 doGoodnessOfFit.py -e 2023 -m 1000 -t 500               # goodness of fit (+ plot)
 python3 doBiasTest.py -e 2023 -m 1000 -t 500                    # bias test
 ```
