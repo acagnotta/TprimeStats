@@ -12,6 +12,7 @@ parser.add_option(      '--FitOption',  dest='FitOption',   type=str,   default 
 parser.add_option(      '--suffix',     dest='suffix',      type=str,   default = "",                                     help='Suffix of the datacard folder (e.g. TprimeToTZ_700_<suffix>)')
 parser.add_option('--sigpath',        dest='sigpath',         type=str,   default = '',                                   help='Input the signal path as an argument rather than deriving it here')
 parser.add_option('--signal',        dest='signal',         type=str,   default = '',                                   help='Input the signal as well')
+parser.add_option('--outdir',        dest='outdir',         type=str,   default = 'impacts',                            help='Subfolder of the signal folder for the outputs (e.g. impacts_r0)')
 (opt, args) = parser.parse_args()
 
 
@@ -23,7 +24,7 @@ mass            = str(opt.massPoint)
 FitOption       = opt.FitOption
 dc_folder       = jsoninput["dc-folder"][era]
 sig_folder      = f"{dc_folder}/TprimeToTZ_{mass}{f'_{opt.suffix}' if opt.suffix else ''}" if opt.sigpath=='' else opt.sigpath 
-impact_dir      = f"{sig_folder}/impacts/"
+impact_dir      = f"{sig_folder}/{opt.outdir}/"
 signal          = f"TprimeToTZ_{mass}" if opt.signal =='' else opt.signal  
 
 print("Running impacts for era: {}, mass: {}, FitOption: {}".format(era, mass, FitOption))
