@@ -106,6 +106,7 @@ python3 makePositiveHistos.py -i <dc-folder>/histo2023_symmetrized.root     # fi
 python3 CreateDatacards.py -e 2023 --addSyst --addMCStat        # write datacards
 python3 RunLimits.py -e 2023                                    # limits, 8 masses in parallel (--jobs) -> Limits_2023.json
 python3 BrazilPlot.py -e 2023                                   # limits (Brazil plot)
+python3 CompareLimits.py -i <dc-folder A>/Limits_2024_<suffix>.json <dc-folder B>/Limits_2024_<suffix>.json -l "A" "B" -o CompareLimits   # median expected limits of several runs vs Full Run 2 expected and theory
 python3 doImpacts.py -e 2023 -m 1000 --outdir impacts_r0         # impacts (default fit option: Asimov -t -1)
 python3 doGoodnessOfFit.py -e 2023 -m 1000 -t 500               # goodness of fit (+ plot)
 python3 doBiasTest.py -e 2023 -m 1000 -t 500                    # bias test
