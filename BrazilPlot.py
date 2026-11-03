@@ -7,7 +7,7 @@ import subprocess
 import argparse
 import json
 import sys
-from utils import unpackLabel, getLumi
+from utils import unpackLabel, getLumi, run2_expected_masses, run2_expected_xsec
 ROOT.gROOT.SetBatch()
 
 
@@ -105,9 +105,8 @@ if("TBDM" in finalmodel):
     
     #print(finalmodel)
 if("TprimeToTZNW" in finalmodel):
-    masses_observedFullRun2 = [0.7,     0.8,     0.9,     1.0,      1.1,     1.2,     1.3,     1.4,     1.5,     1.6,      1.7,      1.8]
-    xrun2=masses_observedFullRun2
-    y_expectedFullRun2      = [0.36602, 0.17070, 0.10685, 0.07576,  0.05272, 0.03193, 0.02376, 0.01967, 0.01859, 0.016390, 0.013720, 0.012710 ]
+    xrun2=run2_expected_masses
+    y_expectedFullRun2      = run2_expected_xsec
     y_observedFullRun2      = [0.21201, 0.09651, 0.07699, 0.07321,  0.06227, 0.04283, 0.04972, 0.04938, 0.03669, 0.022630, 0.018300, 0.015040 ]
     exprun2 = ROOT.TGraph(len(xrun2), array('d',xrun2), array('d',y_expectedFullRun2) )
     obsrun2 = ROOT.TGraph(len(xrun2), array('d',xrun2), array('d',y_observedFullRun2) )
