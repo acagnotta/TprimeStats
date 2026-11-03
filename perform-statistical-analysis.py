@@ -98,5 +98,6 @@ for signal in jsoninput["processes"]["signals"]:
 
 
 #The best way is to first write, then run, otherwise when it fails it does not write and one cannot run the failed command for debugging
+# a failed command doesn't stop the next ones, but the script exits with an error at the end
 if(doRun):
-    subprocess.run("source "+commands_file, shell=True, check=True)
+    subprocess.run(f"rc=0; trap 'rc=1' ERR; source {commands_file}; exit $rc", shell=True, check=True, executable="/bin/bash")
