@@ -100,6 +100,11 @@ canvas = CMS.cmsCanvas(
     square=True,
     iPos=0,
 )
+# smaller axis numbers and titles than the cmsstyle default (0.05, 0.06), so the x-axis numbers don't overlap
+frame = canvas.GetListOfPrimitives().FindObject("hframe")
+for axis in [frame.GetXaxis(), frame.GetYaxis()]:
+    axis.SetLabelSize(0.04)
+    axis.SetTitleSize(0.05)
 
 blue    = ROOT.TColor.GetColor("#5790fc")
 red     = ROOT.TColor.GetColor("#e42536")
