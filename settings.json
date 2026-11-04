@@ -1,7 +1,7 @@
 {
     "notes"         : "2023 test: no TprimeToTZ_*_2023 signal yet, the plots-folder of 2023 has symlinks to the 2024 signal files (see NOTE.txt there)",
     "variable"      : "MT_T",
-    "rebinning"     :  [500, 600, 700, 800, 1000, 1200, 1400, 1600, 1800, 2000],
+    "rebinning"     : [],
     
     "plots-folder"  : {
                         "2022"          : "",
@@ -16,7 +16,7 @@
                         "2022EE"            : "",
                         "2023"              : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2023/test_sig2024/",
                         "2023postBPix"      : "",
-                        "2024"              : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2024/test_sig2024/",
+                        "2024"              : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2024_test2/6SR_3LooseCR_blinded/",
                         "2022+2023"         : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2022+2023/",
                         "2023+2024"         : "/eos/user/l/lfavilla/RDF_DManalysis/stats/2023+2024/test_sig2024/",
                         "2022+2023+2024"    : ""
@@ -32,7 +32,7 @@
 
     "processes"     : { 
                         "backgrounds": ["TT", "TW", "ZJets", "WJets", "QCD"],
-                        "signals": ["TprimeToTZ_700", "TprimeToTZ_800", "TprimeToTZ_900", "TprimeToTZ_1000", "TprimeToTZ_1100", "TprimeToTZ_1200", "TprimeToTZ_1300", "TprimeToTZ_1400", "TprimeToTZ_1500", "TprimeToTZ_1600", "TprimeToTZ_1700", "TprimeToTZ_1800", "TprimeToTZ_1900", "TprimeToTZ_2000", "TprimeToTZ_2200", "TprimeToTZ_2400", "TprimeToTZ_2600"]
+                        "signals": ["TprimeToTZ_700"]
                         },
 
     "samples"       : {
