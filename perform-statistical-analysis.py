@@ -11,7 +11,7 @@ parser.add_argument('-j', '--jsonInput',    type=str,               default='set
 #parser.add_argument('-p', '--positive',     action="store_true",                                help='Fix zero bin contents in histograms')
 parser.add_argument("-u", "--unblind",      action="store_true",                                help="Use data instead of the background sum")
 parser.add_argument('-s', '--suffix',       type=str,               default='',                 help='Suffix labelling the whole run (e.g. histo2023_<suffix>.root)')
-parser.add_argument('-m', '--mode',       type=str,               default='csmdlpbig',                 help='Operation mode - each letter activates one part: c=collect histos; s=symmetrize jesTotal/jer; m=make positive /fix histograms, d=datacard creation, l=limit evaluation, p=plot limit (brazil plot), i=impacts, g=gof')
+parser.add_argument('-m', '--mode',       type=str,               default='csmdlpbig',                 help='Operation mode - each letter activates one part: c=collect histos; s=symmetrize jesTotal/jer; m=make positive /fix histograms, d=datacard creation, l=limit evaluation, p=plot limit (brazil plot), i=impacts, g=gof, b=bias')
 parser.add_argument('--dryrun',       action="store_true", default=False,                 help='just get run the commands file without executing them')
 parser.add_argument('--verbose',       type=int,               default=0,                 help='Verbosity level')
 parser.add_argument('-v', '--variant',       type=str,               default='',                 help='Suffix labelling the variant at datacard level)')
@@ -19,7 +19,7 @@ parser.add_argument('--testMasses',       type=str,               default='',   
 args = parser.parse_args()
 
 
-#--mode: c-collect z-fixzeros/systss d-createdatacard m-makepositive l-limits p-plotbrazil i-impacts b-bias g-gof ; nessuno: fa tutto
+#--mode: c-collect s-symmetrize jesTotal/jer m-makepositive (zero fix) d-createdatacard l-limits p-plotbrazil i-impacts g-gof b-bias ; default: all
 
 era             = args.era
 unblind         = "--unblind" if args.unblind else ""
