@@ -67,7 +67,7 @@ python3 perform-statistical-analysis.py -e 2023 -m csmdlp
 
 A copy of the settings and the list of executed commands (`settings_<suffix>.json`, `commands_<suffix>.sh`) is saved in the `dc-folder`, together with the limits (`Limits_<era>_<suffix>.json`).
 
-The impacts (`i`) are done on the Asimov dataset twice, background only and with the nominal signal (`-t -1 --expectSignal 0/1`), in `TprimeToTZ_<mass>_<suffix>/impacts_r0/` and `impacts_r1/`.
+The impacts (`i`) are done on the Asimov dataset twice, background only and with r = median expected limit of that mass (`-t -1 --expectSignal 0/<r exp.>`, read from the `out.log` of the limits), in `TprimeToTZ_<mass>_<suffix>/impacts_r0/` and `impacts_rexpected/`.
 
 If a step fails (e.g. the impacts), the next steps are still run, but the script exits with an error at the end.
 
@@ -107,9 +107,9 @@ python3 CreateDatacards.py -e 2023 --addSyst --addMCStat        # write datacard
 python3 RunLimits.py -e 2023                                    # limits, 8 masses in parallel (--jobs) -> Limits_2023.json
 python3 BrazilPlot.py -e 2023                                   # limits (Brazil plot)
 python3 CompareLimits.py -i <dc-folder A>/Limits_2024_<suffix>.json <dc-folder B>/Limits_2024_<suffix>.json -l "A" "B" -o CompareLimits   # median expected limits of several runs vs Full Run 2 expected and theory
-python3 doImpacts.py -e 2023 -m 1000 --outdir impacts_r0         # impacts (default fit option: Asimov -t -1)
+python3 doImpacts.py -e 2023 -m 1000 --outdir impacts_rexpected --expectSignal expected   # impacts on Asimov (-t -1), --expectSignal 0, 1, ... or expected (median expected limit)
 python3 doGoodnessOfFit.py -e 2023 -m 1000 -t 500               # goodness of fit (+ plot)
-python3 doBiasTest.py -e 2023 -m 1000 -t 500                    # bias test
+python3 doBiasTest.py -e 2023 -m 1000 -t 500                    # bias test (--robustFit 1), injected r x toy chunks in parallel (--jobs 8, --split 5)
 ```
 
 To redo only the GoF plot: `python3 plotGoodnessOfFit.py -i <dc-folder>/TprimeToTZ_1000/gof/gof.json -e 2023 -m 1000`.
