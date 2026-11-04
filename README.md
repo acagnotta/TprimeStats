@@ -61,9 +61,14 @@ Luminosity:
 python3 perform-statistical-analysis.py -e 2023 -m csmdlp
 ```
 
-- `-m <letters>`: steps to run (c=collect, s=symmetrize JES/JER, m=fix zero-content bins, d=datacards, l=limits, p=Brazil plot, i=impacts, g=GoF, b=bias). `s` and `m` add `symmetrized`/`zerosFixed` to the suffix, so keep them also when rerunning without collecting (e.g. `-m smdlp`)
+- `-m <letters>`: steps to run (c=collect, s=symmetrize JES/JER, m=fix zero-content bins, d=datacards, l=limits, p=Brazil plot, i=impacts, g=GoF, b=bias), default all (`csmdlpbig`). `s` and `m` add `symmetrized`/`zerosFixed` to the suffix, so keep them also when rerunning without collecting (e.g. `-m smdlp`)
 - `-s <suffix>`: label the whole run (e.g. `histo2023_<suffix>.root`, `TprimeToTZ_<mass>_<suffix>/`)
 - `-u`: unblind (use data instead of the background sum)
+- `--testMasses <masses>`: comma-separated masses in GeV (e.g. `1000`) for impacts, GoF and bias; default all masses
+- `-v <variant>`: extra label for a datacard-level variation (`TprimeToTZ_<mass>_<suffix>_<variant>/`)
+- `--dryrun`: only write `commands_<suffix>.sh`, without running it
+
+The zero fix (`m`) sets the MC bins below 1e-8 (zero or negative, e.g. from negative weights) to 1e-6. `data_obs` is never changed, except for the negative bins of the blinded pseudo-data (sum of backgrounds), which are set to 0.
 
 A copy of the settings and the list of executed commands (`settings_<suffix>.json`, `commands_<suffix>.sh`) is saved in the `dc-folder`, together with the limits (`Limits_<era>_<suffix>.json`).
 
