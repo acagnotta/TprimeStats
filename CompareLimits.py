@@ -64,7 +64,7 @@ CMS.SetLumi(lumi, run="Run 3", round_lumi=3)
 CMS.SetEnergy(13.6)
 CMS.ResetAdditionalInfo()
 y_str = "#sigma(pp#rightarrowTbq) #times BR(T#rightarrowtZ) [pb]"
-canv = CMS.cmsCanvas("comparelimits", x_min-0.05, x_max+0.05, min(all_y)*0.5, max(all_y)*50, "T' mass [TeV]", y_str, square=True, extraSpace=0.05, iPos=iPos)
+canv = CMS.cmsCanvas("comparelimits", x_min-0.05, x_max+0.05, 1e-3, max(all_y)*50, "T' mass [TeV]", y_str, square=True, extraSpace=0.05, iPos=iPos)
 canv.SetLogy()
 
 leg = CMS.cmsLeg(0.50, 0.89 - 0.037*(len(graphs)+3), 0.93, 0.89, textSize=0.028)
