@@ -90,9 +90,9 @@ for signal in jsoninput["processes"]["signals"]:
     signalpath=output_dir+"/"+signal+"_"+suffix_dc+"/"
     impactOptions = "--robustFit 1 --cminDefaultMinimizerStrategy=1 --setParameterRanges r=-100,100" # -t -1 --autoBoundsPOIs r --autoRange 1 --cminDefaultMinimizerStrategy=1
     if("i" in args.mode):
-        # impacts on the Asimov dataset, background only (r=0) and with the nominal signal (r=1), each in its own folder
-        for r in ["0", "1"]:
-            write_run(f"python3 doImpacts.py -e {era} -m {mass} --signal {signal} --sigpath {signalpath} -j {settings_file} {suffix_opt} --outdir impacts_r{r} --FitOption '{impactOptions} -t -1 --expectSignal {r}'",doRun=False)
+        # impacts on the Asimov dataset, background only (r=0) and with r = median expected limit of the mass, each in its own folder
+        for r in ["0", "expected"]:
+            write_run(f"python3 doImpacts.py -e {era} -m {mass} --signal {signal} --sigpath {signalpath} -j {settings_file} {suffix_opt} --outdir impacts_r{r} --expectSignal {r} --FitOption '{impactOptions}'",doRun=False)
     if("g" in args.mode):
         write_run(f"python3 doGoodnessOfFit.py -e {era} -m {mass} --signal {signal} --sigpath {signalpath} -j {settings_file} -t 500 -s 123456 {suffix_opt}",doRun=False)
     if("b" in args.mode):
