@@ -201,9 +201,45 @@
                             "branchRootFile": "ISR",
                             "correlated": true
                         },
-                        "FSR": {
-                            "name": "FSR",
-                            "processes": "",
+                        "FSR_TT": {
+                            "name": "FSR_TT",
+                            "processes": ["TT"],
+                            "bin": "",
+                            "type": "shape",
+                            "value": 1.0,
+                            "branchRootFile": "FSR",
+                            "correlated": true
+                        },
+                        "FSR_TW": {
+                            "name": "FSR_TW",
+                            "processes": ["TW"],
+                            "bin": "",
+                            "type": "shape",
+                            "value": 1.0,
+                            "branchRootFile": "FSR",
+                            "correlated": true
+                        },
+                        "FSR_QCD": {
+                            "name": "FSR_QCD",
+                            "processes": ["QCD"],
+                            "bin": "",
+                            "type": "shape",
+                            "value": 1.0,
+                            "branchRootFile": "FSR",
+                            "correlated": true
+                        },
+                        "FSR_WJets": {
+                            "name": "FSR_WJets",
+                            "processes": ["WJets"],
+                            "bin": "",
+                            "type": "shape",
+                            "value": 1.0,
+                            "branchRootFile": "FSR",
+                            "correlated": true
+                        },
+                        "FSR_ZJets": {
+                            "name": "FSR_ZJets",
+                            "processes": ["ZJets"],
                             "bin": "",
                             "type": "shape",
                             "value": 1.0,
