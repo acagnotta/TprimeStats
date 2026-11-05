@@ -14,6 +14,9 @@ parser = argparse.ArgumentParser(description="Compare the expected limits (media
 parser.add_argument('-i', '--inputs',       type=str,   nargs='+',  required=True,          help='Limits_<era>_<suffix>.json files written by RunLimits.py')
 parser.add_argument('-l', '--labels',       type=str,   nargs='+',  default=[],             help='Legend labels, one per input (default: name of the folder of each json)')
 parser.add_argument('-o', '--output',       type=str,               default='CompareLimits',help='Output file name without extension (.png and .pdf are written)')
+parser.add_argument('--ymin',               type=float,             default=1e-3,           help='Minimum of the y axis [pb]')
+parser.add_argument('--ymax',               type=float,             default=None,           help='Maximum of the y axis [pb] (default: 50 x the largest value)')
+parser.add_argument('--rectangular',        action='store_true',                            help='Rectangular canvas instead of the square one')
 opt = parser.parse_args()
 
 if opt.labels and len(opt.labels) != len(opt.inputs):
@@ -64,8 +67,10 @@ CMS.SetLumi(lumi, run="Run 3", round_lumi=3)
 CMS.SetEnergy(13.6)
 CMS.ResetAdditionalInfo()
 y_str = "#sigma(pp#rightarrowTbq) #times BR(T#rightarrowtZ) [pb]"
-canv = CMS.cmsCanvas("comparelimits", x_min-0.05, x_max+0.05, 1e-3, max(all_y)*50, "T' mass [TeV]", y_str, square=True, extraSpace=0.05, iPos=iPos)
+canv = CMS.cmsCanvas("comparelimits", x_min-0.05, x_max+0.05, opt.ymin, opt.ymax or max(all_y)*50, "T' mass [TeV]", y_str, square=not opt.rectangular, extraSpace=0.05, iPos=iPos)
 canv.SetLogy()
+if opt.rectangular:
+    CMS.GetCmsCanvasHist(canv).GetYaxis().SetTitleOffset(1.15)   # the y title overlaps the 10^n labels otherwise
 
 leg = CMS.cmsLeg(0.50, 0.89 - 0.037*(len(graphs)+3), 0.93, 0.89, textSize=0.028)
 leg.SetHeader("95% CL expected limits")
