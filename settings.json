@@ -1,7 +1,7 @@
 {
-    "notes": "SET10 with FSR split per background (as QCDScale), no FSR on signal",
+    "notes": "SET10 + signed symmetrization delta=(up-down)/2, unsigned delta where up == down (jesTotal, jer) + rebinning 9 bins",
     "variable": "MT_T",
-    "rebinning": [],
+    "rebinning": [500, 600, 700, 800, 1000, 1200, 1400, 1600, 1800, 2000],
     "plots-folder": {
         "2022": "",
         "2022EE": "",
@@ -14,7 +14,7 @@
         "2022EE": "",
         "2023": "/eos/user/l/lfavilla/RDF_DManalysis/stats/2023/test_sig2024/",
         "2023postBPix": "",
-        "2024": "/eos/user/l/lfavilla/RDF_DManalysis/stats/2024_XT_MET_FSRsplit/SET10/",
+        "2024": "/eos/user/l/lfavilla/RDF_DManalysis/stats/2024_test_signedSymm_v2_rebin9/",
         "2022+2023": "/eos/user/l/lfavilla/RDF_DManalysis/stats/2022+2023/",
         "2023+2024": "/eos/user/l/lfavilla/RDF_DManalysis/stats/2023+2024/test_sig2024/",
         "2022+2023+2024": ""
