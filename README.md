@@ -51,6 +51,8 @@ Use `source`, not `bash` or `./`: otherwise the `cmsenv` environment is lost whe
 
 Everything is driven by `settings.json`: input plots folder and output datacard folder per era (`plots-folder`, `dc-folder`), `processes` (backgrounds and signals), `samples`, `categories` and `systematics`.
 
+`settings.json` is the reference configuration: change and commit it only for changes meant as the new default. For the day-to-day runs use a personal copy (git-ignored), `cp settings.json settings_<user>.json`, and pass it with `-j settings_<user>.json`; the snapshot of each run is saved anyway in its `dc-folder`.
+
 Luminosity:
 - integrated luminosity per era (`lumi_dict`): [PdmVRun3Analysis](https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVRun3Analysis)
 - luminosity uncertainty (`systematics.lumi`, `lumi-combinations`): [LumiRecommendationsRun3](https://twiki.cern.ch/twiki/bin/view/CMS/LumiRecommendationsRun3)
