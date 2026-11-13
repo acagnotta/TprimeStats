@@ -1,3 +1,8 @@
 __pycache__/
 *.pdf
 *.png
+condor/
+# Kerberos credential cache that condor leaves in the submit folder
+lfavilla.cc
+# personal settings (settings_<user>.json), the snapshot of each run is saved in its dc-folder
+settings_*.json
