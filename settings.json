@@ -7,7 +7,7 @@
         "2022EE": "",
         "2023": "/eos/user/l/lfavilla/RDF_DManalysis/results/2023/run2023_wTopSFs_OnlySelectedTop_JMAR_Review1_sig2024/plots/",
         "2023postBPix": "",
-        "2024": "/eos/user/l/lfavilla/RDF_DManalysis/results/2024/run2024_ExtraTightTop_MET_NoTrotaSF/noTrotaSF/plots/"
+        "2024": "/eos/user/l/lfavilla/RDF_DManalysis/results/2024/run2024_ExtraTightTop_MET_10EventTopCategories_NoTrotaSF/noTrotaSF/plots/"
     },
     "dc-folder": {
         "2022": "/eos/user/l/lfavilla/RDF_DManalysis/stats/2022/",
@@ -331,6 +331,15 @@
             "value": 1.0,
             "branchRootFile": "FSR",
             "correlated": true
+        },
+        "triggerSF": {
+            "name": "triggerSF",
+            "processes": "",
+            "bin": "",
+            "type": "shape",
+            "value": 1.0,
+            "branchRootFile": "triggerSF",
+            "correlated": false
         }
     }
 }
