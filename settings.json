@@ -268,9 +268,55 @@
             "branchRootFile": "QCDScale",
             "correlated": true
         },
-        "ISR": {
-            "name": "ISR",
-            "processes": "",
+        "ISR_TT": {
+            "name": "ISR_TT",
+            "processes": [
+                "TT"
+            ],
+            "bin": "",
+            "type": "shape",
+            "value": 1.0,
+            "branchRootFile": "ISR",
+            "correlated": true
+        },
+        "ISR_TW": {
+            "name": "ISR_TW",
+            "processes": [
+                "TW"
+            ],
+            "bin": "",
+            "type": "shape",
+            "value": 1.0,
+            "branchRootFile": "ISR",
+            "correlated": true
+        },
+        "ISR_QCD": {
+            "name": "ISR_QCD",
+            "processes": [
+                "QCD"
+            ],
+            "bin": "",
+            "type": "shape",
+            "value": 1.0,
+            "branchRootFile": "ISR",
+            "correlated": true
+        },
+        "ISR_WJets": {
+            "name": "ISR_WJets",
+            "processes": [
+                "WJets"
+            ],
+            "bin": "",
+            "type": "shape",
+            "value": 1.0,
+            "branchRootFile": "ISR",
+            "correlated": true
+        },
+        "ISR_ZJets": {
+            "name": "ISR_ZJets",
+            "processes": [
+                "ZJets"
+            ],
             "bin": "",
             "type": "shape",
             "value": 1.0,
