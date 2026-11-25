@@ -96,6 +96,7 @@ Long runs survive the logout from lxplus only on batch. One job per settings fil
 
 ```bash
 python3 condor_submitter.py -j settings.json -e 2024 -m csmdlpig --testMasses 1000          # one job: one settings file, one era
+python3 condor_submitter.py -j settings.json -e 2023 2024 2023+2024 -m csmdlpig --testMasses 1000,2000   # one job, the three eras in sequence; impacts/gof/bias at 1 and 2 TeV
 python3 condor_submitter.py -j settingsA.json settingsB.json -e 2023+2024 2023 2024 -m csmdlpig --testMasses 1000   # two jobs, three eras each
 python3 condor_submitter.py --status                 # all jobs in condor/, or give the job folders
 python3 condor_submitter.py --resubmit condor/<launchtime>_*   # failed/removed jobs among these, only the eras not DONE
