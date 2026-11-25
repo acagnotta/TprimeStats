@@ -92,16 +92,18 @@ python3 perform-statistical-analysis.py -e 2023+2024 -s <suffix> -m csmdlp
 
 ## Running on HTCondor
 
-Long runs survive the logout from lxplus only on batch. One job per settings file; the eras run in sequence inside the job, each one with all its steps. The options the submitter doesn't know (`-m`, `-s`, `-u`, `--testMasses`, ...) go to `perform-statistical-analysis.py`:
+Long runs survive the logout from lxplus only on batch. One job per settings file; the eras run in sequence inside the job, each one with all its steps. The options `-m`, `-s`, `-u`, `-v`, `--testMasses`, `--verbose` go to `perform-statistical-analysis.py`, only when given (otherwise its defaults are used); any other option is an error:
 
 ```bash
-python3 condor_submitter.py -j settingsA.json settingsB.json -e 2023+2024 2023 2024 -m csmdlpig --testMasses 1000
+python3 condor_submitter.py -j settings.json -e 2024 -m csmdlpig --testMasses 1000          # one job: one settings file, one era
+python3 condor_submitter.py -j settingsA.json settingsB.json -e 2023+2024 2023 2024 -m csmdlpig --testMasses 1000   # two jobs, three eras each
 python3 condor_submitter.py --status                 # all jobs in condor/, or give the job folders
 python3 condor_submitter.py --resubmit condor/<launchtime>_*   # failed/removed jobs among these, only the eras not DONE
 ```
 
 - `--flavour` (default `tomorrow` = 1 day), `--cpus` (default 8), `--cmssw` (default `~/CMSSW_16_0_0/src`), `--dryrun` (write the job files, or show what would be resubmitted, without submitting)
 - job files and logs in `condor/<launchtime>_<settings>/`, with a copy of the settings (the batch nodes don't see local `/tmp`) and `job.json` (eras and options, used by `--status` and `--resubmit`)
+- the job state comes from `condor_q` (JobTag = name of the job folder): a job out of the queue with eras not DONE (failed, removed or lost) is resubmitted by `--resubmit`; held jobs are not
 - a failed era doesn't stop the next ones: each era leaves `DONE_<era>` or `FAILED_<era>` in the job folder, and the job exits with an error if any era failed
 
 ## Single steps
