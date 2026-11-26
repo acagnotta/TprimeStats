@@ -7,7 +7,7 @@ import subprocess
 import argparse
 import json
 import sys
-from utils import unpackLabel, getLumi, run2_expected_masses, run2_expected_xsec
+from utils import unpackLabel, getLumi, run2_limits, theory_width5
 ROOT.gROOT.SetBatch()
 
 
@@ -90,13 +90,7 @@ g     = ROOT.TGraphErrors(len(x), array('d',x),  array('d',y_central))
 ge    = ROOT.TGraphAsymmErrors(len(x), array('d',x),  array('d',y_central), array('d',ex), array('d',ex), array('d',y1_down), array('d',y1_up))
 ge2   = ROOT.TGraphAsymmErrors(len(x), array('d',x),  array('d',y_central), array('d',ex), array('d',ex), array('d',y2_down), array('d',y2_up))
 th    = ROOT.TGraph(len(x), array('d',x),  array('d',sigma))
-thw5  = ROOT.TGraph(len(x), array('d',x),  array('d',[0.3877, 0.20453, 0.113759, 0.0659085, 0.039696, 0.02459, 0.0156, 0.0101, 0.0066, 0.0045, 0.0031, 0.00213]))
-
-#masses_observedFullRun2 = [0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8]
-#y_observedFullRun2      = [0.21201, 0.09651, 0.07699, 0.07321, 0.06227, 0.04283, 0.04972, 0.04938, 0.03669, 0.02263, 0.0183, 0.01505]
-#y_expectedFullRun2      = [0.36702, 0.1707, 0.10685, 0.07576, 0.05272, 0.03193, 0.02376, 0.01967, 0.01859, 0.01639, 0.01372, 0.01271]
-#obsrun2                 = ROOT.TGraph(len(masses_observedFullRun2), array('d',masses_observedFullRun2),  array('d',y_observedFullRun2))
-#exprun2                 = ROOT.TGraph(len(masses_observedFullRun2), array('d',masses_observedFullRun2),  array('d',y_expectedFullRun2))
+thw5  = ROOT.TGraph(len(theory_width5["mass"]), array('d',theory_width5["mass"]),  array('d',theory_width5["xsec"]))
 
 if("TBDM" in finalmodel):
     masses_observedFullRun2 = [0.01,  0.05,   0.1,    0.15,    0.2,     0.25,    0.3,     0.35,    0.4,     0.45,     0.5,     1.0 ]
@@ -105,11 +99,8 @@ if("TBDM" in finalmodel):
     
     #print(finalmodel)
 if("TprimeToTZNW" in finalmodel):
-    xrun2=run2_expected_masses
-    y_expectedFullRun2      = run2_expected_xsec
-    y_observedFullRun2      = [0.21201, 0.09651, 0.07699, 0.07321,  0.06227, 0.04283, 0.04972, 0.04938, 0.03669, 0.022630, 0.018300, 0.015040 ]
-    exprun2 = ROOT.TGraph(len(xrun2), array('d',xrun2), array('d',y_expectedFullRun2) )
-    obsrun2 = ROOT.TGraph(len(xrun2), array('d',xrun2), array('d',y_observedFullRun2) )
+    exprun2 = ROOT.TGraph(len(run2_limits["mass"]), array('d',run2_limits["mass"]), array('d',run2_limits["expected"]) )
+    obsrun2 = ROOT.TGraph(len(run2_limits["mass"]), array('d',run2_limits["mass"]), array('d',run2_limits["observed"]) )
     #    thrun2                 = th
 
 # Styling
@@ -134,16 +125,18 @@ CMS.cmsDraw(ge2, "3L", fcolor = ROOT.TColor.GetColor("#F5BB54"))
 CMS.cmsDraw(ge, "3", fcolor = ROOT.TColor.GetColor("#607641"))
 CMS.cmsDraw(g, "L", lstyle=ROOT.kDashed)
 CMS.cmsDraw(th, "L", lcolor = ROOT.TColor.GetColor("#bd1f01"), lwidth=2)
+CMS.cmsDraw(thw5, "L", lcolor = ROOT.kBlue+2, lwidth=2)
 CMS.cmsDraw(exprun2, "L", lcolor = ROOT.TColor.GetColor("#964a8b"), lwidth=2)
 #CMS.cmsDraw(obsrun2, "L", lcolor = ROOT.TColor.GetColor("#964a8b"), lwidth=2)
 #MS.cmsDraw(exprun2, "L", lcolor = ROOT.TColor.GetColor("#964a8b"), lwidth=2, lstyle=ROOT.kDashed)
 
 canv.SetLogy()
-leg = CMS.cmsLeg(0.50, 0.60, 0.94, 0.90, textSize=0.026)
+leg = CMS.cmsLeg(0.50, 0.56, 0.94, 0.90, textSize=0.026)
 leg.AddEntry(g, "expected","L")
 leg.AddEntry(ge, "68% expected","F")
 leg.AddEntry(ge2, "95% expected","F")
 leg.AddEntry(th, "#sigma(NLO), Singlet T, #Gamma/m_{T}<0.01","L")
+leg.AddEntry(thw5, "#sigma(NLO), Singlet T, #Gamma/m_{T}=0.05","L")
 #leg.AddEntry(obsrun2, "observed Full Run 2","L")
 leg.AddEntry(exprun2, "expected Full Run 2","L")
 CMS.CMS_lumi(canv, iPos)
@@ -177,12 +170,6 @@ g     = ROOT.TGraphErrors(len(x), array('d',x),  array('d',y_central))
 ge    = ROOT.TGraphAsymmErrors(len(x), array('d',x),  array('d',y_central), array('d',ex), array('d',ex), array('d',y1_down), array('d',y1_up))
 ge2   = ROOT.TGraphAsymmErrors(len(x), array('d',x),  array('d',y_central), array('d',ex), array('d',ex), array('d',y2_down), array('d',y2_up))
 th    = ROOT.TGraph(len(x), array('d',x),  array('d',sigma))
-thw5  = ROOT.TGraph(len(x), array('d',x),  array('d',[0.3877, 0.20453, 0.113759, 0.0659085, 0.039696, 0.02459, 0.0156, 0.0101, 0.0066, 0.0045, 0.0031, 0.00213]))
-
-#masses_observedFullRun2 = [0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8]
-#y_observedFullRun2      = [0.21201, 0.09651, 0.07699, 0.07321, 0.06227, 0.04283, 0.04972, 0.04938, 0.03669, 0.02263, 0.0183, 0.01505]
-#y_expectedFullRun2      = [0.36702, 0.1707, 0.10685, 0.07576, 0.05272, 0.03193, 0.02376, 0.01967, 0.01859, 0.01639, 0.01372, 0.01271]
-#obsrun2                 = ROOT.TGraph(len(masses_observedFullRun2), array('d',masses_observedFullRun2),  array('d',y_observedFullRun2))
 
 # Styling
 # CMS.SetExtraText("Preliminary")

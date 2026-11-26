@@ -6,7 +6,7 @@ import argparse
 import glob
 import json
 import os
-from utils import unpackLabel, getLumi, run2_expected_masses, run2_expected_xsec
+from utils import unpackLabel, getLumi, run2_limits, theory_width5
 ROOT.gROOT.SetBatch()
 
 usage = "python3 CompareLimits.py -i <dc-folder A>/Limits_2024_<suffix>.json <dc-folder B>/Limits_2024_<suffix>.json [-l labelA labelB] [-o CompareLimits]"
@@ -50,8 +50,8 @@ for f, era in zip(opt.inputs, eras):
         x_min, x_max = min(masses), max(masses)
         all_y += xsec
 
-exprun2 = ROOT.TGraph(len(run2_expected_masses), array('d', run2_expected_masses), array('d', run2_expected_xsec))
-all_y  += run2_expected_xsec
+exprun2 = ROOT.TGraph(len(run2_limits["mass"]), array('d', run2_limits["mass"]), array('d', run2_limits["expected"]))
+all_y  += run2_limits["expected"]
 
 # luminosity in the label only when all inputs are the same era; lumi_dict from the settings saved next to the json
 lumi = ""
@@ -72,7 +72,7 @@ canv.SetLogy()
 if opt.rectangular:
     CMS.GetCmsCanvasHist(canv).GetYaxis().SetTitleOffset(1.15)   # the y title overlaps the 10^n labels otherwise
 
-leg = CMS.cmsLeg(0.50, 0.89 - 0.037*(len(graphs)+3), 0.93, 0.89, textSize=0.028)
+leg = CMS.cmsLeg(0.50, 0.89 - 0.037*(len(graphs)+4), 0.93, 0.89, textSize=0.028)
 leg.SetHeader("95% CL expected limits")
 for g, label, color in zip(graphs, labels, colors):
     CMS.cmsDraw(g, "LP", marker=20, msize=0.8, mcolor=color, lcolor=color, lwidth=2)
@@ -81,6 +81,9 @@ CMS.cmsDraw(exprun2, "L", lcolor=ROOT.kBlack, lwidth=2, lstyle=ROOT.kDashed)
 leg.AddEntry(exprun2, "Full Run 2 (137 fb^{-1})", "L")
 CMS.cmsDraw(th, "L", lcolor=ROOT.TColor.GetColor("#bd1f01"), lwidth=2)
 leg.AddEntry(th, "#sigma(NLO), Singlet T, #Gamma/m_{T}<0.01", "L")
+thw5 = ROOT.TGraph(len(theory_width5["mass"]), array('d', theory_width5["mass"]), array('d', theory_width5["xsec"]))
+CMS.cmsDraw(thw5, "L", lcolor=ROOT.kBlue+2, lwidth=2)
+leg.AddEntry(thw5, "#sigma(NLO), Singlet T, #Gamma/m_{T}=0.05", "L")
 
 CMS.CMS_lumi(canv, iPos)
 CMS.SaveCanvas(canv, f"{opt.output}.png", False)
