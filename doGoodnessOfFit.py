@@ -14,6 +14,7 @@ parser.add_option("-s", "--seed",      dest="seed",      type=int, default=12345
 parser.add_option(      "--jobs",      dest="jobs",      type=int, default=8,               help="Toys split in this many combine jobs run in parallel, with seeds seed, seed+1, ...")
 parser.add_option(      "--freezeSignalStrength",        dest="freezeSignalStrength",       action="store_true", default=False, help="Fix the signal strength r to zero")
 parser.add_option(      "--robustMinimizer",             dest="robustMinimizer",            action="store_true", default=False, help="Enable fallback minimizers to avoid false local minima")
+parser.add_option(      "--postfitToys",                 dest="postfitToys",                action="store_true", default=False, help="Toys generated after a fit to the data (no --bypassFrequentistFit), for real data")
 parser.add_option(      "--suffix",    dest="suffix",    type=str, default="",              help="Suffix of the datacard folder (e.g. TprimeToTZ_700_<suffix>)")
 parser.add_option('--sigpath',        dest='sigpath',         type=str,   default = '',                                   help='Input the signal path as an argument rather than deriving it here')
 parser.add_option('--signal',        dest='signal',         type=str,   default = '',                                   help='Input the signal as well')
@@ -40,7 +41,7 @@ toys_output         = " ".join(f"higgsCombine_gof_toys_bonly.GoodnessOfFit.mH125
 signal_options      = "--setParameters r=0 --freezeParameters r" if opt.freezeSignalStrength else ""
 minimizer_options   = "--cminFallbackAlgo Minuit2,Simplex,0:0.01 --cminFallbackAlgo Minuit2,Migrad,2:0.001" if opt.robustMinimizer else ""
 data_gof_options    = f"--algo saturated --toysFrequentist --bypassFrequentistFit --rMin -250 --rMax 250 {signal_options} {minimizer_options}"
-mc_gof_options      = f"--algo saturated --toysFrequentist --bypassFrequentistFit --rMin -250 --rMax 250 {signal_options} {minimizer_options}"
+mc_gof_options      = f"--algo saturated --toysFrequentist {'' if opt.postfitToys else '--bypassFrequentistFit'} --rMin -250 --rMax 250 {signal_options} {minimizer_options}"
 signal          = f"TprimeToTZ_{mass}" if opt.signal =='' else opt.signal  
 
 signal_status = "fixed at 0" if opt.freezeSignalStrength else "floating"
