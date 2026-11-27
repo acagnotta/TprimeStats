@@ -7,6 +7,8 @@ import subprocess
 import argparse
 import json
 import sys
+from concurrent.futures import ThreadPoolExecutor
+from utils import getLumi
 ROOT.gROOT.SetBatch()
 
 
@@ -16,19 +18,18 @@ parser.add_argument('-j', '--jsonInput',          dest='jsonInput',       type=s
 parser.add_argument('-u', '--unblind',            dest='unblind',         action='store_true',    default=False,              help='Unblind')
 parser.add_argument('-s','--suffix',                   dest='suffix',          type=str,               default="",               help='suffix to add to histo.root file name (e.g. histo2022_<suffix>.root)')
 parser.add_argument('-R','--readOnly',            dest='readOnly',         action='store_true',    default=False,              help='read only mode-do not repeat the fit ')
+parser.add_argument('--jobs',                     dest='jobs',            type=int,               default=8,                  help='number of masses fitted in parallel')
 
 opt = parser.parse_args()
 with open(opt.jsonInput) as file:
     print("Opening JSON file {}".format(opt.jsonInput))
     jsoninput   = json.load(file)
 lumi_dict                           = jsoninput["lumi_dict"]
-lumi_dict["2022+2023"]              = lumi_dict["2022"] + lumi_dict["2023"]
-lumi_dict["2022+2023+2024"]         = lumi_dict["2022"] + lumi_dict["2023"] + lumi_dict["2024"]
 
 
 
 era                                 = opt.era
-lumi                                = lumi_dict[era]
+lumi                                = getLumi(lumi_dict, era)
 outputFolderPath                    = jsoninput["dc-folder"][era]
 signals                             = jsoninput["processes"]["signals"]
 
@@ -38,14 +39,14 @@ blindlabel= "_obs_" if opt.unblind else ""
 combineOptions="" 
 
 print ("suffix is", suffix)
-def RunCombine_Limits(signal,doLaunch=True):
-    print("Reading combine output for signal", signal)
-#    m = str(int(mass*10**3))
+def LaunchCombine_Limits(signal):
     dcFolderPath   = f'{jsoninput["dc-folder"][era]}/{signal}{suffix}'
-    if(doLaunch):
-        combinecommand = f"combine -M AsymptoticLimits -d {dcFolderPath}/{signal}.txt {combineOptions} > {dcFolderPath}/out.log"
-        subprocess.run(f"cd {dcFolderPath} && {combinecommand}", shell=True, check=True)
-    else:subprocess.run(f"cd {dcFolderPath}", shell=True, check=True)
+    combinecommand = f"combine -M AsymptoticLimits -d {dcFolderPath}/{signal}.txt {combineOptions} > {dcFolderPath}/out.log"
+    subprocess.run(f"cd {dcFolderPath} && {combinecommand}", shell=True, check=True)
+
+def ReadCombine_Limits(signal):
+    print("Reading combine output for signal", signal)
+    dcFolderPath   = f'{jsoninput["dc-folder"][era]}/{signal}{suffix}'
     with open(f"{dcFolderPath}/out.log") as f:
         lines = f.readlines()
     for line in lines:
@@ -66,9 +67,18 @@ def RunCombine_Limits(signal,doLaunch=True):
 Resultdict= {}
 launchLimits=not opt.readOnly
 
+# the fits run in parallel, each in its own datacard folder; the outputs are then read in mass order
+failedFits = []
+if(launchLimits):
+    with ThreadPoolExecutor(max_workers=opt.jobs) as pool:
+        futures = {s: pool.submit(LaunchCombine_Limits, s) for s in signals}
+    failedFits = [s for s, future in futures.items() if future.exception()]
+
 for ns in range(len(signals)):
     s= signals[ns]
-    try: values=(RunCombine_Limits(s,doLaunch=launchLimits))
+    try:
+        if s in failedFits: raise RuntimeError(f"combine failed for {s}")
+        values=(ReadCombine_Limits(s))
     except:
         if(ns>0):
             print(f"warning! Fit for signal {s} did not produce limit output! Using{signals[ns-1]} instead")

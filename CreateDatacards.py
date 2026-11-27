@@ -1,6 +1,6 @@
 import CombineHarvester.CombineTools.ch as ch
 import optparse
-import json, os
+import json, os, subprocess
 from array import array
 import sys
 
@@ -32,7 +32,7 @@ outFolderPath   = jsoninput["dc-folder"][era]
 def writeSingleDatacards():
     return 0
 
-def writeTotalDatacard(jsoninput, era, unblind, sig, suffix="", suffix_dc=""):
+def writeTotalDatacard(jsoninput, era, sub_era, unblind, sig, sigFolderPath, suffix="", suffix_dc=""):
     cb = ch.CombineHarvester()
     cb.SetVerbosity(3)
 
@@ -49,20 +49,28 @@ def writeTotalDatacard(jsoninput, era, unblind, sig, suffix="", suffix_dc=""):
     cb.AddProcesses( ["*"], ["TprimeToTZ"], ["13.6TeV"], ["jets+MET"], signals, cats, True)
 
 
-    inputShapePath = f"{outFolderPath}/histo{era}{f'_{suffix}' if suffix else ''}.root"
+    inputShapePath = f"{jsoninput['dc-folder'][sub_era].rstrip('/')}/histo{sub_era}{f'_{suffix}' if suffix else ''}.root"
     print(f"Using shape input file: {inputShapePath}")
 
     # Add systematics
     if opt.addSyst:
-        print("Systematics to be added: ", jsoninput["systematics"].keys())
-        for s in jsoninput["systematics"].keys():
-            name        = jsoninput["systematics"][s]["name"]
-            processes   = jsoninput["systematics"][s]["processes"]
-            bins        = jsoninput["systematics"][s]["bin"]
-            type        = jsoninput["systematics"][s]["type"]
-            syst_value  = jsoninput["systematics"][s]["value"]
+        systematics = dict(jsoninput["systematics"])
+        # combined eras: the lumi uncertainty follows the LUM scheme of the combined years (lumi-combinations in the settings)
+        years       = "+".join(sorted({e[:4] for e in era.split("+")}))
+        if era != sub_era and years in jsoninput.get("lumi-combinations", {}):
+            del systematics["lumi"]
+            for name, values in jsoninput["lumi-combinations"][years].items():
+                if sub_era[:4] in values:
+                    systematics[name] = {"name": name, "processes": "", "bin": "", "type": "lnN", "value": values[sub_era[:4]]}
+        print("Systematics to be added: ", systematics.keys())
+        for s in systematics.keys():
+            name        = systematics[s]["name"]
+            processes   = systematics[s]["processes"]
+            bins        = systematics[s]["bin"]
+            type        = systematics[s]["type"]
+            syst_value  = systematics[s]["value"]
             if isinstance(syst_value, dict):
-                value = syst_value[era]
+                value = syst_value[sub_era]
             else:
                 value = syst_value
 
@@ -78,12 +86,16 @@ def writeTotalDatacard(jsoninput, era, unblind, sig, suffix="", suffix_dc=""):
         cb.ExtractShapes(inputShapePath,
                         "hist_$PROCESS_$BIN_nominal", # nominal isto saved in histo2022.root as hist_"sample"_"region"
                         "hist_$PROCESS_$BIN_$SYSTEMATIC") # syst hist_$PROCESS_$BIN_$SYSTEMATIC
+        # combined eras: systematics uncorrelated between eras get the era in the name (e.g. jesTotal_2023)
+        if era != sub_era:
+            for s in systematics.values():
+                if not s.get("correlated", True):
+                    cb.cp().syst_name([s["name"]]).ForEachSyst(lambda syst, newName=f"{s['name']}_{sub_era}": syst.set_name(newName))
     else:
         cb.ExtractShapes(inputShapePath,
                         "hist_$PROCESS_$BIN_nominal","") # nominal isto saved in histo2022.root as hist_"sample"_"region"
 
     cb.PrintAll()
-    sigFolderPath = f"{outFolderPath}/{sig}{f'_{suffix_dc}' if suffix else ''}"
     print(sigFolderPath)
     if not os.path.exists(sigFolderPath):
         os.makedirs(sigFolderPath)
@@ -91,7 +103,7 @@ def writeTotalDatacard(jsoninput, era, unblind, sig, suffix="", suffix_dc=""):
     with open(f"{sigFolderPath}/datacard_metadata.json", "w") as metadataFile:
         json.dump(
             {
-                "era": era,
+                "era": sub_era,
                 "signal": sig,
                 "categories": [cat for cat, _ in jsoninput["categories"]],
                 "shape_input": inputShapePath,
@@ -123,4 +135,16 @@ if __name__ == "__main__":
     print(jsoninput["processes"]["signals"])
     for sig in jsoninput["processes"]["signals"]:
         print(sig)
-        writeTotalDatacard(jsoninput, era, unblind, sig, suffix=suffix, suffix_dc=suffix_dc)
+        sigFolderPath = f"{outFolderPath}/{sig}{f'_{suffix_dc}' if suffix else ''}"
+        if "+" in era:
+            # combined eras: one datacard per era in <sigFolderPath>/<era>/, then combineCards into <sigFolderPath>/<sig>.txt
+            sub_eras = era.split("+")
+            for sub_era in sub_eras:
+                writeTotalDatacard(jsoninput, era, sub_era, unblind, sig, f"{sigFolderPath}/{sub_era}", suffix=suffix, suffix_dc=suffix_dc)
+            combineCommand = "combineCards.py " + " ".join(f"y{e}={e}/{sig}.txt" for e in sub_eras) + f" > {sig}.txt"
+            print(f"Running: {combineCommand}")
+            subprocess.run(combineCommand, shell=True, check=True, cwd=sigFolderPath)
+            with open(f"{sigFolderPath}/datacard_metadata.json", "w") as metadataFile:
+                json.dump({"era": era, "eras": sub_eras, "signal": sig, "suffix": suffix_dc}, metadataFile, indent=2, sort_keys=True)
+        else:
+            writeTotalDatacard(jsoninput, era, era, unblind, sig, sigFolderPath, suffix=suffix, suffix_dc=suffix_dc)

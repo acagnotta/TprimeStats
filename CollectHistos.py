@@ -13,7 +13,7 @@ parser.add_argument("--addSyst",                action="store_true",            
 parser.add_argument("-s", "--suffix",           default="",                     help="Suffix for the output file name (e.g. histo2023_<suffix>.root)")
 opt = parser.parse_args()
 
-dorebin=False
+
 
 def SampleFiles(sample, era):
     from samples import sample_dict
@@ -24,6 +24,7 @@ def CollectHistos(inputEosFolder, outFolderPath, jsonInput, era, unblind=False, 
     inputEosFolder  = inputEosFolder.rstrip("/")
     outFolderPath   = outFolderPath.rstrip("/")
     lumi            = jsonInput["lumi_dict"][era]
+    rebinning       = jsonInput.get("rebinning", [])  # new bin edges, empty = keep the input binning
     outFilePath     = f"{outFolderPath}/histo{era}{f'_{suffix}' if suffix else ''}.root"
     var             = jsonInput["variable"]
     bins            = [(name, useRealData) for name, useRealData in jsonInput["categories"]]
@@ -53,11 +54,19 @@ def CollectHistos(inputEosFolder, outFolderPath, jsonInput, era, unblind=False, 
 
     os.makedirs(outFolderPath, exist_ok=True)
     output              = ROOT.TFile(outFilePath, "RECREATE")
-    xbins               = array("d", [500, 600, 700, 800, 1000, 1400, 2000])
+    doRebin             = len(rebinning) > 0
+    xbins               = array("d", rebinning)
     nominalHistos       = {}
     componentIntegrals  = {}
     summaryInfo         = {}
-    
+    inputFiles          = {}
+
+    # each input file is opened only once: opening it again for every histogram is what took most of the time
+    def getHisto(f, name):
+        if f not in inputFiles:
+            inputFiles[f] = ROOT.TFile.Open(f"{inputEosFolder}/{f}")
+        return inputFiles[f].Get(name)
+
     ##### Collect MONTECARLO histograms #####
     for inputSyst, outputSyst, target_processes in systs:
         for process, processFileList in processFiles.items():
@@ -70,14 +79,12 @@ def CollectHistos(inputEosFolder, outFolderPath, jsonInput, era, unblind=False, 
                 componentIntegrals[outputName]  = []
                 summaryInfo[outputName]         = (region, outputSyst, process)
                 for i, f in enumerate(processFileList):
-                    inputFile                   = ROOT.TFile.Open(f"{inputEosFolder}/{f}")
                     print(process, region, inputName, f)
-                    tmp                         = inputFile.Get(inputName)
+                    tmp                         = getHisto(f, inputName)
                     tmp                         = tmp.Clone(f"{outputName}_source{i}")
                     tmp.SetDirectory(0)
-                    inputFile.Close()
                     tmp.Scale(lumi)
-                    if(dorebin):tmp                         = tmp.Rebin(len(xbins)-1, f"{outputName}_rebin{i}", xbins)
+                    if(doRebin):tmp                         = tmp.Rebin(len(xbins)-1, f"{outputName}_rebin{i}", xbins)
                     tmp.SetDirectory(0)
                     componentIntegrals[outputName].append((f, tmp.Integral()))
                     
@@ -104,15 +111,12 @@ def CollectHistos(inputEosFolder, outFolderPath, jsonInput, era, unblind=False, 
             if not dataFiles: raise RuntimeError("No data ROOT files found")
             inputName = f"{var}_{region}"
             for i, f in enumerate(dataFiles):
-                input = ROOT.TFile.Open(f"{inputEosFolder}/{f}")
-                tmp = input.Get(inputName)
+                tmp = getHisto(f, inputName)
                 if not tmp:
-                    input.Close()
                     raise RuntimeError(f"Histogram {inputName} not found in {inputEosFolder}/{f}")
                 tmp = tmp.Clone(f"{outputName}_source{i}")
                 tmp.SetDirectory(0)
-                input.Close()
-                if(dorebin):tmp = tmp.Rebin(len(xbins)-1, f"{outputName}_rebin{i}", xbins)
+                if(doRebin):tmp = tmp.Rebin(len(xbins)-1, f"{outputName}_rebin{i}", xbins)
                 tmp.SetDirectory(0)
                 componentIntegrals[outputName].append((f, tmp.Integral()))
                 if h_out is None: h_out = tmp.Clone(outputName); h_out.SetDirectory(0)
@@ -128,6 +132,8 @@ def CollectHistos(inputEosFolder, outFolderPath, jsonInput, era, unblind=False, 
         h_out.Write()
 
     output.Close()
+    for inputFile in inputFiles.values():
+        inputFile.Close()
     output                  = ROOT.TFile.Open(outFilePath, "READ")
     validationErrors        = 0
     for outputName, components in componentIntegrals.items():

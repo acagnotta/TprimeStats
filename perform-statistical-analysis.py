@@ -11,14 +11,15 @@ parser.add_argument('-j', '--jsonInput',    type=str,               default='set
 #parser.add_argument('-p', '--positive',     action="store_true",                                help='Fix zero bin contents in histograms')
 parser.add_argument("-u", "--unblind",      action="store_true",                                help="Use data instead of the background sum")
 parser.add_argument('-s', '--suffix',       type=str,               default='',                 help='Suffix labelling the whole run (e.g. histo2023_<suffix>.root)')
-parser.add_argument('-m', '--mode',       type=str,               default='csmdlpbig',                 help='Operation mode - each letter activates one part: c=collect histos; s=symmetrize jesTotal/jer; m=make positive /fix histograms, d=datacard creation, l=limit evaluation, p=plot limit (brazil plot), i=impacts, g=gof')
+parser.add_argument('-m', '--mode',       type=str,               default='csmdlpbig',                 help='Operation mode - each letter activates one part: c=collect histos; s=symmetrize jesTotal/jer; m=make positive /fix histograms, d=datacard creation, l=limit evaluation, p=plot limit (brazil plot), i=impacts, g=gof, b=bias')
 parser.add_argument('--dryrun',       action="store_true", default=False,                 help='just get run the commands file without executing them')
 parser.add_argument('--verbose',       type=int,               default=0,                 help='Verbosity level')
 parser.add_argument('-v', '--variant',       type=str,               default='',                 help='Suffix labelling the variant at datacard level)')
+parser.add_argument('--testMasses',       type=str,               default='',                 help='Comma-separated masses in GeV for impacts/gof/bias (e.g. 1000), default all')
 args = parser.parse_args()
 
 
-#--mode: c-collect z-fixzeros/systss d-createdatacard m-makepositive l-limits p-plotbrazil i-impacts b-bias g-gof ; nessuno: fa tutto
+#--mode: c-collect s-symmetrize jesTotal/jer m-makepositive (zero fix) d-createdatacard l-limits p-plotbrazil i-impacts g-gof b-bias ; default: all
 
 era             = args.era
 unblind         = "--unblind" if args.unblind else ""
@@ -61,14 +62,17 @@ def write_run(cmd, doRun=True):
         subprocess.run(cmd, shell=True, check=True)
 
 fitoptions=""#we should give as arguments to the limit functions some options - there might be the need
-if ("c" in args.mode):
-    write_run(f"python3 CollectHistos.py -e {era} -j {settings_file} --addSyst {f'--suffix {histo_suffix}' if histo_suffix else ''} {unblind}",doRun=False)
+# histogram steps are done era by era: for combined eras (e.g. 2023+2024) they are repeated for each era, so that the commands file of the combination contains everything
+for sub_era in era.split("+"):
+    sub_era_dir = jsoninput["dc-folder"][sub_era].rstrip("/")
+    if ("c" in args.mode):
+        write_run(f"python3 CollectHistos.py -e {sub_era} -j {settings_file} --addSyst {f'--suffix {histo_suffix}' if histo_suffix else ''} {unblind}",doRun=False)
 
-if ("s" in args.mode):
-    write_run(f"python3 symmetrizeHistos.py -i {output_dir}/histo{era}{f'_{histo_suffix}' if histo_suffix else ''}.root -s jesTotal,jer",doRun=False)
+    if ("s" in args.mode):
+        write_run(f"python3 symmetrizeHistos.py -i {sub_era_dir}/histo{sub_era}{f'_{histo_suffix}' if histo_suffix else ''}.root -s jesTotal,jer",doRun=False)
 
-if ("m" in args.mode):
-    write_run(f"python3 makePositiveHistos.py -i {output_dir}/histo{era}{f'_{sym_suffix}' if sym_suffix else ''}.root",doRun=False)
+    if ("m" in args.mode):
+        write_run(f"python3 makePositiveHistos.py -i {sub_era_dir}/histo{sub_era}{f'_{sym_suffix}' if sym_suffix else ''}.root",doRun=False)
 
 if ("d" in args.mode):
     write_run(f"python3 CreateDatacards.py -e {era} -j {settings_file} --addSyst --addMCStat {suffix_opt} {variant_opt} {unblind}",doRun=False)
@@ -82,10 +86,13 @@ if ("p" in args.mode):
 #unpackLabel(signal,verbose)[0] for signal in jsoninput["processes"]["signals"]]
 for signal in jsoninput["processes"]["signals"]:
     mass=str(int(1000*unpackLabel(signal,verbose)[0]))
+    if args.testMasses and mass not in args.testMasses.split(","): continue
     signalpath=output_dir+"/"+signal+"_"+suffix_dc+"/"
     impactOptions = "--robustFit 1 --cminDefaultMinimizerStrategy=1 --setParameterRanges r=-100,100" # -t -1 --autoBoundsPOIs r --autoRange 1 --cminDefaultMinimizerStrategy=1
     if("i" in args.mode):
-        write_run(f"python3 doImpacts.py -e {era} -m {mass} --signal {signal} --sigpath {signalpath} -j {settings_file} {suffix_opt} --FitOption '{impactOptions}'",doRun=False)
+        # impacts on the Asimov dataset, background only (r=0) and with r = median expected limit of the mass, each in its own folder
+        for r in ["0", "expected"]:
+            write_run(f"python3 doImpacts.py -e {era} -m {mass} --signal {signal} --sigpath {signalpath} -j {settings_file} {suffix_opt} --outdir impacts_r{r} --expectSignal {r} --FitOption '{impactOptions}'",doRun=False)
     if("g" in args.mode):
         write_run(f"python3 doGoodnessOfFit.py -e {era} -m {mass} --signal {signal} --sigpath {signalpath} -j {settings_file} -t 500 -s 123456 {suffix_opt}",doRun=False)
     if("b" in args.mode):
@@ -93,5 +100,6 @@ for signal in jsoninput["processes"]["signals"]:
 
 
 #The best way is to first write, then run, otherwise when it fails it does not write and one cannot run the failed command for debugging
+# a failed command doesn't stop the next ones, but the script exits with an error at the end
 if(doRun):
-    subprocess.run("source "+commands_file, shell=True, check=True)
+    subprocess.run(f"rc=0; trap 'rc=1' ERR; source {commands_file}; exit $rc", shell=True, check=True, executable="/bin/bash")
