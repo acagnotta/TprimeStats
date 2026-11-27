@@ -13,28 +13,28 @@ ROOT.gROOT.SetBatch()
 red, blue = "#bd1f01", "#3f90da"
 plots = {  # top category -> {region: (legend label, color, marker)}
     "Resolved": {
-        "SRTopRes0fjetsBtagMedium":             ("TBNXT, 0 forward jets",    red,  20),
-        "SRTopResatleast1fjetsBtagMedium":      ("TBNXT, #geq1 forward jet", red,  22),
-        "SRTop0fjetsResXTBtagMedium":           ("XT, 0 forward jets",       blue, 20),
-        "SRTopatleast1fjetsResXTBtagMedium":    ("XT, #geq1 forward jet",    blue, 22),
+        "SRTopRes0fjetsBtagMediumMET200":             ("TBNXT, 0 forward jets",    red,  20),
+        "SRTopResatleast1fjetsBtagMediumMET200":      ("TBNXT, #geq1 forward jet", red,  22),
+        "SRTop0fjetsResXTBtagMediumMET200":           ("XT, 0 forward jets",       blue, 20),
+        "SRTopatleast1fjetsResXTBtagMediumMET200":    ("XT, #geq1 forward jet",    blue, 22),
     },
     "Mixed": {
-        "SRTopMix0fjetsBtagMedium":             ("TBNXT, 0 forward jets",    red,  20),
-        "SRTopMixatleast1fjetsBtagMedium":      ("TBNXT, #geq1 forward jet", red,  22),
-        "SRTop0fjetsMixXTBtagMedium":           ("XT, 0 forward jets",       blue, 20),
-        "SRTopatleast1fjetsMixXTBtagMedium":    ("XT, #geq1 forward jet",    blue, 22),
+        "SRTopMix0fjetsBtagMediumMET200":             ("TBNXT, 0 forward jets",    red,  20),
+        "SRTopMixatleast1fjetsBtagMediumMET200":      ("TBNXT, #geq1 forward jet", red,  22),
+        "SRTop0fjetsMixXTBtagMediumMET200":           ("XT, 0 forward jets",       blue, 20),
+        "SRTopatleast1fjetsMixXTBtagMediumMET200":    ("XT, #geq1 forward jet",    blue, 22),
     },
     "Merged": {
-        "SRTopMer0fjetsBtagMedium":             ("TBNXT, 0 forward jets",    red,  20),
-        "SRTopMeratleast1fjetsBtagMedium":      ("TBNXT, #geq1 forward jet", red,  22),
-        "SRTop0fjetsMerXTBtagMedium":           ("XT, 0 forward jets",       blue, 20),
-        "SRTopatleast1fjetsMerXTBtagMedium":    ("XT, #geq1 forward jet",    blue, 22),
+        "SRTopMer0fjetsBtagMediumMET200":             ("TBNXT, 0 forward jets",    red,  20),
+        "SRTopMeratleast1fjetsBtagMediumMET200":      ("TBNXT, #geq1 forward jet", red,  22),
+        "SRTop0fjetsMerXTBtagMediumMET200":           ("XT, 0 forward jets",       blue, 20),
+        "SRTopatleast1fjetsMerXTBtagMediumMET200":    ("XT, #geq1 forward jet",    blue, 22),
     },
 }
 
 parser = argparse.ArgumentParser(description="Signal acceptance x efficiency vs T mass")
 parser.add_argument("-e", "--era",          default="2024",     help="Era, e.g. 2024")
-parser.add_argument("-i", "--inputFolder",  required=True,      help="Folder with histo<era>.root, where the plots are also saved")
+parser.add_argument("-i", "--inputFolder",  required=True,      help="Folder with histo<era>.root; the plots are saved in its subfolder signal-efficiency/")
 opt = parser.parse_args()
 
 # lumi per era from the reference settings.json of the repo
@@ -43,6 +43,8 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "settings.jso
 
 era         = opt.era
 folder      = opt.inputFolder.rstrip("/")
+outFolder   = f"{folder}/signal-efficiency"
+os.makedirs(outFolder, exist_ok=True)
 lumi        = getLumi(lumi_dict, era)
 regions     = [r for topCatRegions in plots.values() for r in topCatRegions]
 firstEra    = era.split("+")[0]
@@ -82,5 +84,5 @@ for topCat, topCatRegions in plots.items():
     for g, color, marker, label in graphs:
         CMS.cmsDraw(g, "P", marker=marker, msize=1.2, mcolor=ROOT.TColor.GetColor(color))
         leg.AddEntry(g, label, "P")
-    CMS.SaveCanvas(canv, f"{folder}/signalEfficiency_{topCat}_{era}.png", False)
-    CMS.SaveCanvas(canv, f"{folder}/signalEfficiency_{topCat}_{era}.pdf")
+    CMS.SaveCanvas(canv, f"{outFolder}/signalEfficiency_{topCat}_{era}.png", False)
+    CMS.SaveCanvas(canv, f"{outFolder}/signalEfficiency_{topCat}_{era}.pdf")
