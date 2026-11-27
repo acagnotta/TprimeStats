@@ -119,7 +119,7 @@ python3 BrazilPlot.py -e 2023                                   # limits (Brazil
 python3 signal-efficiency.py -e 2024 -i <dc-folder>              # signal acceptance x efficiency vs m_T, one plot per top category with the regions of the "plots" dictionary in the script, reads <dc-folder>/histo<era>.root and saves the plots in <dc-folder>/signal-efficiency/
 python3 CompareLimits.py -i <dc-folder A>/Limits_2024_<suffix>.json <dc-folder B>/Limits_2024_<suffix>.json -l "A" "B" -o CompareLimits   # median expected limits of several runs vs Full Run 2 expected and theory
 python3 doImpacts.py -e 2023 -m 1000 --outdir impacts_rexpected --expectSignal expected   # impacts on Asimov (-t -1), --expectSignal 0, 1, ... or expected (median expected limit)
-python3 doGoodnessOfFit.py -e 2023 -m 1000 -t 500               # goodness of fit (+ plot)
+python3 doGoodnessOfFit.py -e 2023 -m 1000 -t 500               # goodness of fit (+ plot); --postfitToys on real data (toys generated after a fit to the data)
 python3 doBiasTest.py -e 2023 -m 1000 -t 500                    # bias test (--robustFit 1), injected r x toy chunks in parallel (--jobs 8, --split 5)
 ```
 
